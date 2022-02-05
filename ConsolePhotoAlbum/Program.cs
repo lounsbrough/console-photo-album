@@ -1,19 +1,18 @@
-﻿using ConsolePhotoAlbum.Adapters;
+﻿#pragma warning disable SA1200
+using ConsolePhotoAlbum.Adapters;
 using ConsolePhotoAlbum.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+#pragma warning restore SA1200
 
 var serviceProvider = new ServiceCollection()
+    .AddSingleton<IConsolePhotoAlbumService, ConsolePhotoAlbumService>()
     .AddSingleton<IConsoleAdapter, ConsoleAdapter>()
     .AddScoped<IUserInputService, UserInputService>()
     .AddScoped<IImageRetrievalService, ImageRetrievalService>()
     .AddSingleton<HttpClient>()
     .BuildServiceProvider();
 
-var userInputService = serviceProvider.GetService<IUserInputService>();
-int.TryParse(userInputService?.GetUserInput(), out int albumId);
+var consolePhotoAlbumService = serviceProvider.GetRequiredService<IConsolePhotoAlbumService>();
 
-var imageRetrievalService = serviceProvider.GetService<IImageRetrievalService>();
-var albumImages = await imageRetrievalService?.RetrieveImagesInAlbum(albumId);
-
-Console.WriteLine(JsonConvert.SerializeObject(albumImages));
+await consolePhotoAlbumService.RunProgram();

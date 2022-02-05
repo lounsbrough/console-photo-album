@@ -1,11 +1,11 @@
-﻿using System;
+﻿namespace ConsolePhotoAlbumTests.Helpers;
+
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-
-namespace ConsolePhotoAlbumTests.Helpers;
 
 public class MockHttpMessageHandler : HttpMessageHandler
 {
@@ -13,9 +13,9 @@ public class MockHttpMessageHandler : HttpMessageHandler
 
     public HttpStatusCode MockStatusCode { get; set; }
 
-    private string? Input { get; set; }
+    public List<HttpRequestMessage> RecordedRequests { get; } = new ();
 
-    public List<HttpRequestMessage> RecordedRequests { get; } = new();
+    private string? Input { get; set; }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {

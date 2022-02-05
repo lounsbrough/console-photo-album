@@ -1,7 +1,7 @@
-﻿using System;
-using ConsolePhotoAlbum.Adapters;
+﻿namespace ConsolePhotoAlbum.Services;
 
-namespace ConsolePhotoAlbum.Services;
+using System;
+using ConsolePhotoAlbum.Adapters;
 
 public class UserInputService : IUserInputService
 {
@@ -12,10 +12,31 @@ public class UserInputService : IUserInputService
         _consoleAdapter = consoleAdapter;
     }
 
-    public string GetUserInput()
+    public int GetAlbumId(string[] commandLineArguments)
     {
-        _consoleAdapter.WriteLine("Please enter album id to retrieve images:");
+        string? albumIdInput;
 
-        return _consoleAdapter.ReadLine()!;
+        var userProvidedCommandLineArguments = GetUserProvidedCommandLineArguments(commandLineArguments);
+
+        albumIdInput = userProvidedCommandLineArguments.FirstOrDefault() ?? PromptUserForAlbumId();
+
+        if (int.TryParse(albumIdInput, out int albumId))
+        {
+            return albumId;
+        }
+
+        throw new ArgumentException("Album id must be a number.");
+    }
+
+    private static IEnumerable<string> GetUserProvidedCommandLineArguments(string[] commandLineArguments)
+    {
+        return commandLineArguments.Skip(1);
+    }
+
+    private string? PromptUserForAlbumId()
+    {
+        _consoleAdapter.Write("Please enter album id to retrieve images: ");
+
+        return _consoleAdapter.ReadLine();
     }
 }

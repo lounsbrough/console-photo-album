@@ -1,4 +1,6 @@
-﻿using System;
+﻿namespace ConsolePhotoAlbumTests.Services;
+
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -12,16 +14,14 @@ using Newtonsoft.Json;
 using NSubstitute;
 using Xunit;
 
-namespace ConsolePhotoAlbumTests.Services;
-
 public class ImageRetrievalServiceTests : TestBase
 {
     private readonly ImageRetrievalService _subjectUnderTest;
-    private MockHttpMessageHandler _httpMessageHandlerMock;
     private readonly int _expectedAlbumId;
+    private MockHttpMessageHandler _httpMessageHandlerMock;
 
     public ImageRetrievalServiceTests()
-	{
+    {
         _expectedAlbumId = Fixture.Create<int>();
 
         _httpMessageHandlerMock = new MockHttpMessageHandler
@@ -33,37 +33,40 @@ public class ImageRetrievalServiceTests : TestBase
         var httpClient = new HttpClient(_httpMessageHandlerMock);
 
         _subjectUnderTest = new ImageRetrievalService(httpClient);
-	}
-
-    [Fact]
-    public async Task GivenAlbumId_WhenRetrievingImagesInAlbum_AndResponseOk_ThenRequestsCorrectEndpoint()
-    {
-        var expectedEndpoint = $"https://jsonplaceholder.typicode.com/photos?albumId={_expectedAlbumId}";
-
-        await _subjectUnderTest.RetrieveImagesInAlbum(_expectedAlbumId);
-
-        _httpMessageHandlerMock.RecordedRequests.First().RequestUri.Should().Be(expectedEndpoint);
     }
 
-    [Fact]
-    public async Task GivenAlbumId_WhenRetrievingImagesInAlbum_AndResponseOk_ThenReturnsAlbumImages()
+    public class RetrieveImagesInAlbum : ImageRetrievalServiceTests
     {
-        var expectedAlbumImages = Fixture.CreateMany<AlbumImage>();
+        [Fact]
+        public async Task GivenAlbumId_WhenRetrievingImagesInAlbum_AndResponseOk_ThenRequestsCorrectEndpoint()
+        {
+            var expectedEndpoint = $"https://jsonplaceholder.typicode.com/photos?albumId={_expectedAlbumId}";
 
-        _httpMessageHandlerMock.MockResponse = JsonConvert.SerializeObject(expectedAlbumImages);
+            await _subjectUnderTest.RetrieveImagesInAlbum(_expectedAlbumId);
 
-        var actualAlbumImages = await _subjectUnderTest.RetrieveImagesInAlbum(_expectedAlbumId);
+            _httpMessageHandlerMock.RecordedRequests.First().RequestUri.Should().Be(expectedEndpoint);
+        }
 
-        actualAlbumImages.Should().BeEquivalentTo(expectedAlbumImages);
-    }
+        [Fact]
+        public async Task GivenAlbumId_WhenRetrievingImagesInAlbum_AndResponseOk_ThenReturnsAlbumImages()
+        {
+            var expectedAlbumImages = Fixture.CreateMany<AlbumImage>();
 
-    [Fact]
-    public async Task GivenAlbumId_WhenRetrievingImagesInAlbum_AndResponseNotOk_ThenThrowsException()
-    {
-        _httpMessageHandlerMock.MockStatusCode = HttpStatusCode.ServiceUnavailable;
+            _httpMessageHandlerMock.MockResponse = JsonConvert.SerializeObject(expectedAlbumImages);
 
-        Func<Task> function = async () => await _subjectUnderTest.RetrieveImagesInAlbum(_expectedAlbumId);
+            var actualAlbumImages = await _subjectUnderTest.RetrieveImagesInAlbum(_expectedAlbumId);
 
-        await function.Should().ThrowAsync<HttpRequestException>().WithMessage("Unable to retrieve images from api");
+            actualAlbumImages.Should().BeEquivalentTo(expectedAlbumImages);
+        }
+
+        [Fact]
+        public async Task GivenAlbumId_WhenRetrievingImagesInAlbum_AndResponseNotOk_ThenThrowsException()
+        {
+            _httpMessageHandlerMock.MockStatusCode = HttpStatusCode.ServiceUnavailable;
+
+            Func<Task> function = async () => await _subjectUnderTest.RetrieveImagesInAlbum(_expectedAlbumId);
+
+            await function.Should().ThrowAsync<HttpRequestException>().WithMessage("Unable to retrieve images from api");
+        }
     }
 }

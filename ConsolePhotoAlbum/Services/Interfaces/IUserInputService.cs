@@ -2,5 +2,5 @@
 
 public interface IUserInputService
 {
-    string GetUserInput();
+    int GetAlbumId(string[] commandLineArguments);
 }

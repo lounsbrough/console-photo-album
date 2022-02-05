@@ -1,6 +1,6 @@
-﻿using ConsolePhotoAlbum.DataTransferObjects;
+﻿namespace ConsolePhotoAlbum.Services;
 
-namespace ConsolePhotoAlbum.Services;
+using ConsolePhotoAlbum.DataTransferObjects;
 
 public interface IImageRetrievalService
 {

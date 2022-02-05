@@ -1,7 +1,7 @@
-﻿using AutoFixture;
-using Xunit;
+﻿namespace ConsolePhotoAlbumTests;
 
-namespace ConsolePhotoAlbumTests;
+using AutoFixture;
+using Xunit;
 
 public class TestBase
 {
