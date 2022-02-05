@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  consolephotoalbum:
+    image: ${DOCKER_REGISTRY-}consolephotoalbum
+    build:
+      context: .
+      dockerfile: ConsolePhotoAlbum/Dockerfile

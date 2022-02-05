@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsolePhotoAlbum", "Consol
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsolePhotoAlbumTests", "ConsolePhotoAlbumTests\ConsolePhotoAlbumTests.csproj", "{CC1F8B89-DEA8-486C-9208-21F7515DDDB9}"
 EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{FA7011BD-206B-450F-B308-6C05654E9121}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{CC1F8B89-DEA8-486C-9208-21F7515DDDB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC1F8B89-DEA8-486C-9208-21F7515DDDB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC1F8B89-DEA8-486C-9208-21F7515DDDB9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA7011BD-206B-450F-B308-6C05654E9121}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA7011BD-206B-450F-B308-6C05654E9121}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA7011BD-206B-450F-B308-6C05654E9121}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA7011BD-206B-450F-B308-6C05654E9121}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
