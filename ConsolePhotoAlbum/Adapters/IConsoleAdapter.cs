@@ -1,9 +1,8 @@
-﻿namespace ConsolePhotoAlbum.Adapters
-{
-    public interface IConsoleAdapter
-    {
-        void WriteLine(string output);
+﻿namespace ConsolePhotoAlbum.Adapters;
 
-        string? ReadLine();
-    }
+public interface IConsoleAdapter
+{
+    void WriteLine(string output);
+
+    string? ReadLine();
 }

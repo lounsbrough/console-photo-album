@@ -1,7 +1,6 @@
-﻿namespace ConsolePhotoAlbum.Services
+﻿namespace ConsolePhotoAlbum.Services;
+
+public interface IUserInputService
 {
-    public interface IUserInputService
-    {
-        string GetUserInput();
-    }
+    string GetUserInput();
 }

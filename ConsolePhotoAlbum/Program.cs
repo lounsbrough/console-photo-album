@@ -1,11 +1,19 @@
 ﻿using ConsolePhotoAlbum.Adapters;
 using ConsolePhotoAlbum.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 
 var serviceProvider = new ServiceCollection()
     .AddSingleton<IConsoleAdapter, ConsoleAdapter>()
-    .AddSingleton<IUserInputService, UserInputService>()
+    .AddScoped<IUserInputService, UserInputService>()
+    .AddScoped<IImageRetrievalService, ImageRetrievalService>()
+    .AddSingleton<HttpClient>()
     .BuildServiceProvider();
 
-var consolePhotoAlbum = serviceProvider.GetService<IUserInputService>();
-consolePhotoAlbum?.GetUserInput();
+var userInputService = serviceProvider.GetService<IUserInputService>();
+int.TryParse(userInputService?.GetUserInput(), out int albumId);
+
+var imageRetrievalService = serviceProvider.GetService<IImageRetrievalService>();
+var albumImages = await imageRetrievalService?.RetrieveImagesInAlbum(albumId);
+
+Console.WriteLine(JsonConvert.SerializeObject(albumImages));

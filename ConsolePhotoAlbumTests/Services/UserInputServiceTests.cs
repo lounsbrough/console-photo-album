@@ -9,15 +9,14 @@ namespace ConsolePhotoAlbumTests;
 
 public class UserInputServiceTests : TestBase
 {
-    private readonly IConsoleAdapter consoleAdapter;
-
-    public UserInputService SubjectUnderTest { get; }
+    private readonly IConsoleAdapter _consoleAdapter;
+    private readonly UserInputService _subjectUnderTest;
 
     public UserInputServiceTests()
     {
-        consoleAdapter = Substitute.For<IConsoleAdapter>();
+        _consoleAdapter = Substitute.For<IConsoleAdapter>();
 
-        SubjectUnderTest = new UserInputService(consoleAdapter);
+        _subjectUnderTest = new UserInputService(_consoleAdapter);
     }
 
     [Fact]
@@ -25,9 +24,9 @@ public class UserInputServiceTests : TestBase
     {
         var expectedUserInput = Fixture.Create<string>();
 
-        consoleAdapter.ReadLine().Returns(expectedUserInput);
+        _consoleAdapter.ReadLine().Returns(expectedUserInput);
 
-        var actualUserInput = SubjectUnderTest.GetUserInput();
+        var actualUserInput = _subjectUnderTest.GetUserInput();
 
         actualUserInput.Should().Be(expectedUserInput);
     }

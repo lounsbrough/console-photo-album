@@ -14,8 +14,8 @@ public class UserInputService : IUserInputService
 
     public string GetUserInput()
     {
-        _consoleAdapter.WriteLine("Search options coming soon.");
+        _consoleAdapter.WriteLine("Please enter album id to retrieve images:");
 
-        return _consoleAdapter.ReadLine();
+        return _consoleAdapter.ReadLine()!;
     }
 }
