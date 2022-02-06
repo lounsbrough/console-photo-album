@@ -2,7 +2,7 @@
 
 using System;
 
-public class AlbumImage
+public class Image
 {
     public int AlbumId { get; set; }
 

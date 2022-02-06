@@ -1,11 +1,18 @@
 ﻿namespace ConsolePhotoAlbumTests.Services;
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoFixture;
-using ConsolePhotoAlbum.Adapters;
+using ConsolePhotoAlbum.Adapters.Interfaces;
+using ConsolePhotoAlbum.DataTransferObjects;
+using ConsolePhotoAlbum.Enums;
 using ConsolePhotoAlbum.Services;
+using ConsolePhotoAlbum.Services.Interfaces;
+using FluentAssertions;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using Xunit;
 
 public class ConsolePhotoAlbumServiceTests : TestBase
@@ -15,7 +22,7 @@ public class ConsolePhotoAlbumServiceTests : TestBase
     private readonly IImageRetrievalService _imageRetrievalService;
     private readonly ConsolePhotoAlbumService _subjectUnderTest;
 
-    public ConsolePhotoAlbumServiceTests()
+    protected ConsolePhotoAlbumServiceTests()
     {
         _consoleAdapter = Substitute.For<IConsoleAdapter>();
         _userInputService = Substitute.For<IUserInputService>();
@@ -27,76 +34,106 @@ public class ConsolePhotoAlbumServiceTests : TestBase
             _imageRetrievalService);
     }
 
-    public class RetrieveImagesInAlbum : ConsolePhotoAlbumServiceTests
+    public class RunMenuLoop : ConsolePhotoAlbumServiceTests
     {
-        private const string GenericExceptionMessage = "Unhandled exception occurred.";
-        private int _expectedAlbumId;
-
-        public RetrieveImagesInAlbum()
+        [Fact]
+        public async Task WhenRunningMenuLoop_ThenShowsUserInstructions()
         {
-            _expectedAlbumId = Fixture.Create<int>();
+            await _subjectUnderTest.RunMenuLoop();
+
+            _userInputService.Received(1).ShowUserInstructions();
         }
 
         [Fact]
-        public async Task GivenAlbumIdAvailable_WhenRunningProgram_ThenRetrievesImagesFromAlbum()
+        public async Task WhenRunningMenuLoop_AndCommandsNotValid_ThenShowReturnToMenuPrompt()
         {
-            _userInputService.GetAlbumId(Arg.Any<string[]>()).Returns(_expectedAlbumId);
+            _userInputService.ValidateUserCommands(Arg.Any<List<ParsedUserCommand>>()).Returns(false);
 
-            await _subjectUnderTest.RunProgram();
+            var continueLoop = await _subjectUnderTest.RunMenuLoop();
 
-            await _imageRetrievalService.Received(1).RetrieveImagesInAlbum(_expectedAlbumId);
+            continueLoop.Should().BeTrue();
+            await _imageRetrievalService.DidNotReceive().RetrieveImages(Arg.Any<int?>(), Arg.Any<string?>());
+            _userInputService.Received(1).ShowReturnToMenuPrompt();
         }
 
         [Fact]
-        public async Task GivenGetAlbumIdThrowsArgumentException_WhenRunningProgram_ThenShowsUserExceptionMessage()
+        public async Task WhenRunningMenuLoop_AndExitCommand_ThenAbortLoop()
         {
-            var expectedExceptionMessage = Fixture.Create<string>();
+            var expectedParsedUserCommands = new List<ParsedUserCommand>
+            {
+                new () { Command = UserCommands.Exit }
+            };
 
-            _userInputService
-                .When(service => service.GetAlbumId(Arg.Any<string[]>()))
-                .Do(service =>
+            _userInputService.GetParsedUserCommands().Returns(expectedParsedUserCommands);
+            _userInputService.ValidateUserCommands(expectedParsedUserCommands).Returns(true);
+
+            var continueLoop = await _subjectUnderTest.RunMenuLoop();
+
+            continueLoop.Should().BeFalse();
+            await _imageRetrievalService.DidNotReceive().RetrieveImages(Arg.Any<int?>(), Arg.Any<string?>());
+            _userInputService.DidNotReceive().ShowReturnToMenuPrompt();
+        }
+
+        [Fact]
+        public async Task WhenRunningMenuLoop_AndAlbumProvided_AndSearchProvided_ThenRetrieveImagesWithParameters()
+        {
+            var expectedAlbumId = Fixture.Create<int>();
+            var expectedSearchText = Fixture.Create<string>();
+
+            var expectedParsedUserCommands = new List<ParsedUserCommand>
+            {
+                new ()
                 {
-                    throw new ArgumentException(expectedExceptionMessage);
-                });
+                    Command = UserCommands.Album,
+                    Argument = expectedAlbumId.ToString()
+                },
+                new ()
+                {
+                    Command = UserCommands.Search,
+                    Argument = expectedSearchText
+                }
+            };
 
-            await _subjectUnderTest.RunProgram();
+            _userInputService.GetParsedUserCommands().Returns(expectedParsedUserCommands);
+            _userInputService.ValidateUserCommands(expectedParsedUserCommands).Returns(true);
 
-            _consoleAdapter.Received(1).WriteLine(expectedExceptionMessage);
-            await _imageRetrievalService.DidNotReceive().RetrieveImagesInAlbum(Arg.Any<int>());
+            var continueLoop = await _subjectUnderTest.RunMenuLoop();
+
+            continueLoop.Should().BeTrue();
+            await _imageRetrievalService.Received(1).RetrieveImages(expectedAlbumId, expectedSearchText);
+            _userInputService.Received(1).ShowReturnToMenuPrompt();
         }
 
         [Fact]
-        public async Task GivenGetAlbumIdThrowsUnexpectedException_WhenRunningProgram_ThenShowsUserGenericMessage()
+        public async Task WhenRunningMenuLoop_AndImagesReturned_ThenShowImageListingForUser()
         {
-            _userInputService
-                .When(service => service.GetAlbumId(Arg.Any<string[]>()))
-                .Do(service =>
-                {
-                    throw new Exception(Fixture.Create<string>());
-                });
+            var expectedImages = Fixture.CreateMany<Image>().ToList();
 
-            await _subjectUnderTest.RunProgram();
+            _userInputService.GetParsedUserCommands().Returns(new List<ParsedUserCommand>());
+            _userInputService.ValidateUserCommands(Arg.Any<List<ParsedUserCommand>>()).Returns(true);
+            _imageRetrievalService.RetrieveImages(Arg.Any<int?>(), Arg.Any<string?>())
+                .Returns(expectedImages);
 
-            _consoleAdapter.Received(1).WriteLine(GenericExceptionMessage);
-            await _imageRetrievalService.DidNotReceive().RetrieveImagesInAlbum(Arg.Any<int>());
+            var continueLoop = await _subjectUnderTest.RunMenuLoop();
+
+            continueLoop.Should().BeTrue();
+            _userInputService.Received(1).ShowImageListing(Arg.Any<List<Image>>());
+            _userInputService.Received(1).ShowReturnToMenuPrompt();
         }
 
         [Fact]
-        public async Task GivenRetrieveImagesInAlbumThrowsUnexpectedException_WhenRunningProgram_ThenShowsUserGenericMessage()
+        public async Task WhenRunningMenuLoop_AndNoImagesReturned_ThenShowNoImagesFoundMessage()
         {
-            _userInputService.GetAlbumId(Arg.Any<string[]>()).Returns(_expectedAlbumId);
+            _userInputService.GetParsedUserCommands().Returns(new List<ParsedUserCommand>());
+            _userInputService.ValidateUserCommands(Arg.Any<List<ParsedUserCommand>>()).Returns(true);
+            _imageRetrievalService.RetrieveImages(Arg.Any<int?>(), Arg.Any<string?>())
+                .Returns(new List<Image>());
 
-            _imageRetrievalService
-                .When(service => service.RetrieveImagesInAlbum(Arg.Any<int>()))
-                .Do(service =>
-                {
-                    throw new Exception(Fixture.Create<string>());
-                });
+            var continueLoop = await _subjectUnderTest.RunMenuLoop();
 
-            await _subjectUnderTest.RunProgram();
-
-            _consoleAdapter.Received(1).WriteLine(GenericExceptionMessage);
-            await _imageRetrievalService.Received(1).RetrieveImagesInAlbum(_expectedAlbumId);
+            continueLoop.Should().BeTrue();
+            _userInputService.Received(1).ShowNoImagesFoundMessage();
+            _userInputService.Received(1).ShowReturnToMenuPrompt();
         }
     }
 }

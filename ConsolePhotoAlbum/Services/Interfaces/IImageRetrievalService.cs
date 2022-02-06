@@ -1,8 +1,8 @@
-﻿namespace ConsolePhotoAlbum.Services;
+﻿namespace ConsolePhotoAlbum.Services.Interfaces;
 
-using ConsolePhotoAlbum.DataTransferObjects;
+using DataTransferObjects;
 
 public interface IImageRetrievalService
 {
-    Task<IEnumerable<AlbumImage>> RetrieveImagesInAlbum(int albumId);
+    Task<IEnumerable<Image>> RetrieveImages(int? albumId, string? searchText);
 }

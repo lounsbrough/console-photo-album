@@ -1,6 +1,7 @@
 ﻿namespace ConsolePhotoAlbum.Services;
 
-using ConsolePhotoAlbum.DataTransferObjects;
+using DataTransferObjects;
+using Interfaces;
 using Newtonsoft.Json;
 
 public class ImageRetrievalService : IImageRetrievalService
@@ -12,17 +13,37 @@ public class ImageRetrievalService : IImageRetrievalService
         _httpClient = httpClient;
     }
 
-    public async Task<IEnumerable<AlbumImage>> RetrieveImagesInAlbum(int albumId)
+    public async Task<IEnumerable<Image>> RetrieveImages(int? albumId, string? searchText)
     {
-        var response = await _httpClient.GetAsync($"https://jsonplaceholder.typicode.com/photos?albumId={albumId}");
+        var endpoint = "https://jsonplaceholder.typicode.com/photos";
+
+        if (albumId != null)
+        {
+            endpoint += $"?albumId={albumId}";
+        }
+
+        var response = await _httpClient.GetAsync(endpoint);
 
         var responseContent = await response.Content.ReadAsStringAsync();
 
-        if (response.IsSuccessStatusCode)
+        if (!response.IsSuccessStatusCode)
         {
-            return JsonConvert.DeserializeObject<IEnumerable<AlbumImage>>(responseContent) !;
+            throw new HttpRequestException("Unable to retrieve images from api");
         }
 
-        throw new HttpRequestException("Unable to retrieve images from api");
+        var retrievedImages = JsonConvert.DeserializeObject<IEnumerable<Image>>(responseContent);
+
+        if (retrievedImages == null)
+        {
+            return new List<Image>();
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchText))
+        {
+            retrievedImages = retrievedImages
+                .Where(image => image.Title != null && image.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+        }
+
+        return retrievedImages;
     }
 }

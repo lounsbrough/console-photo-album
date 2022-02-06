@@ -1,8 +1,10 @@
 ﻿#pragma warning disable SA1200
 using ConsolePhotoAlbum.Adapters;
+using ConsolePhotoAlbum.Adapters.Interfaces;
 using ConsolePhotoAlbum.Services;
+using ConsolePhotoAlbum.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
+
 #pragma warning restore SA1200
 
 var serviceProvider = new ServiceCollection()

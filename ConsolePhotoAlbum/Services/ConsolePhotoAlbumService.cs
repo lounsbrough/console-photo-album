@@ -1,8 +1,8 @@
 ﻿namespace ConsolePhotoAlbum.Services;
 
-using System;
-using ConsolePhotoAlbum.Adapters;
-using ConsolePhotoAlbum.DataTransferObjects;
+using Adapters.Interfaces;
+using Enums;
+using Interfaces;
 using Newtonsoft.Json;
 
 public class ConsolePhotoAlbumService : IConsolePhotoAlbumService
@@ -23,19 +23,64 @@ public class ConsolePhotoAlbumService : IConsolePhotoAlbumService
 
     public async Task RunProgram()
     {
+        bool loopAgain;
+
+        do
+        {
+            loopAgain = await RunMenuLoop();
+        }
+        while (loopAgain);
+    }
+
+    public async Task<bool> RunMenuLoop()
+    {
         try
         {
-            var albumId = _userInputService.GetAlbumId(Environment.GetCommandLineArgs());
+            _userInputService.ShowUserInstructions();
 
-            var albumImages = await _imageRetrievalService.RetrieveImagesInAlbum((int)albumId);
-        }
-        catch (ArgumentException exception)
-        {
-            _consoleAdapter.WriteLine(exception.Message);
+            var parsedUserCommands = _userInputService.GetParsedUserCommands();
+            var commandsValid = _userInputService.ValidateUserCommands(parsedUserCommands);
+
+            if (!commandsValid)
+            {
+                _userInputService.ShowReturnToMenuPrompt();
+
+                return true;
+            }
+
+            if (parsedUserCommands.Any(command => command.Command == UserCommands.Exit))
+            {
+                return false;
+            }
+
+            var parsedAlbumCommand = parsedUserCommands.FirstOrDefault(command => command.Command == UserCommands.Album);
+            var parsedSearchCommand = parsedUserCommands.FirstOrDefault(command => command.Command == UserCommands.Search);
+
+            int? albumId = null;
+            if (int.TryParse(parsedAlbumCommand?.Argument, out var parsedAlbumId))
+            {
+                albumId = parsedAlbumId;
+            }
+
+            var retrievedImages = (await _imageRetrievalService.RetrieveImages(albumId, parsedSearchCommand?.Argument)).ToList();
+
+            if (retrievedImages.Any())
+            {
+                _userInputService.ShowImageListing(retrievedImages);
+            }
+            else
+            {
+                _userInputService.ShowNoImagesFoundMessage();
+            }
+
+            _userInputService.ShowReturnToMenuPrompt();
         }
         catch (Exception)
         {
-            _consoleAdapter.WriteLine("Unhandled exception occurred.");
+            _consoleAdapter.WriteErrorLine("Unhandled exception occurred.");
+            _userInputService.ShowReturnToMenuPrompt();
         }
+
+        return true;
     }
 }

@@ -1,7 +1,6 @@
 ﻿namespace ConsolePhotoAlbumTests;
 
 using AutoFixture;
-using Xunit;
 
 public class TestBase
 {
