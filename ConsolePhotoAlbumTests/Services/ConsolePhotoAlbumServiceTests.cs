@@ -1,6 +1,5 @@
 ﻿namespace ConsolePhotoAlbumTests.Services;
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,7 +11,6 @@ using ConsolePhotoAlbum.Services;
 using ConsolePhotoAlbum.Services.Interfaces;
 using FluentAssertions;
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 using Xunit;
 
 public class ConsolePhotoAlbumServiceTests : TestBase

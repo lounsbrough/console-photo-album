@@ -3,7 +3,6 @@
 using Adapters.Interfaces;
 using Enums;
 using Interfaces;
-using Newtonsoft.Json;
 
 public class ConsolePhotoAlbumService : IConsolePhotoAlbumService
 {
