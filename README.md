@@ -1,5 +1,7 @@
 # Console Photo Album
 
+![dotnet workflow](https://github.com/lounsbrough/console-photo-album/actions/workflows/dotnet.yml/badge.svg)
+
 ---
 ## This repo is my solution to the photo album code challenge from Lean Techniques
 
