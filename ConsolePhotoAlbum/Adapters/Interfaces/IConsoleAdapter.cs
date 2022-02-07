@@ -9,6 +9,4 @@ public interface IConsoleAdapter
     void WriteWarningLine(string output);
 
     void WriteErrorLine(string output);
-
-    void WriteNewLines(int count);
 }

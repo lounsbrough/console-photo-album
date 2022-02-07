@@ -32,11 +32,4 @@ public class ConsoleAdapter : IConsoleAdapter
         Console.WriteLine(output);
         Console.ResetColor();
     }
-
-    public void WriteNewLines(int count)
-    {
-        var newLines = Enumerable.Repeat(Environment.NewLine, count).ToList();
-
-        Console.Write(string.Join(string.Empty, newLines));
-    }
 }

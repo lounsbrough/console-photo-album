@@ -111,7 +111,6 @@ public class UserInterfaceService : IUserInterfaceService
 
     public void ShowNoResultsFoundMessage()
     {
-        _consoleAdapter.WriteNewLines(1);
         _consoleAdapter.WriteWarningLine("No results found.");
     }
 
