@@ -2,7 +2,7 @@
 
 using DataTransferObjects;
 
-public interface IUserInputService
+public interface IUserInterfaceService
 {
     ParsedCommandLineArguments? ParseCommandLineArguments(IEnumerable<string> commandLineArguments);
 

@@ -7,11 +7,11 @@ using Enums;
 using DataTransferObjects;
 using Interfaces;
 
-public class UserInputService : IUserInputService
+public class UserInterfaceService : IUserInterfaceService
 {
     private readonly IConsoleAdapter _consoleAdapter;
 
-    public UserInputService(IConsoleAdapter consoleAdapter)
+    public UserInterfaceService(IConsoleAdapter consoleAdapter)
     {
         _consoleAdapter = consoleAdapter;
     }

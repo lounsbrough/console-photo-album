@@ -14,17 +14,17 @@ using Xunit;
 
 public class ConsolePhotoAlbumServiceTests : TestBase
 {
-    private readonly IUserInputService _userInputService;
+    private readonly IUserInterfaceService _userInterfaceService;
     private readonly IDataRetrievalService _dataRetrievalService;
     private readonly ConsolePhotoAlbumService _subjectUnderTest;
 
     protected ConsolePhotoAlbumServiceTests()
     {
-        _userInputService = Substitute.For<IUserInputService>();
+        _userInterfaceService = Substitute.For<IUserInterfaceService>();
         _dataRetrievalService = Substitute.For<IDataRetrievalService>();
 
         _subjectUnderTest = new ConsolePhotoAlbumService(
-            _userInputService,
+            _userInterfaceService,
             _dataRetrievalService);
     }
 
@@ -33,7 +33,7 @@ public class ConsolePhotoAlbumServiceTests : TestBase
         [Fact]
         public async Task WhenRunningProgram_AndArgumentsNotParsed_ThenAbort()
         {
-            _userInputService.ParseCommandLineArguments(Arg.Any<string[]>()).ReturnsNull();
+            _userInterfaceService.ParseCommandLineArguments(Arg.Any<string[]>()).ReturnsNull();
 
             await _subjectUnderTest.RunProgram();
 
@@ -56,7 +56,7 @@ public class ConsolePhotoAlbumServiceTests : TestBase
                     { AvailableFlags.SearchText, expectedSearchText }
                 }
             };
-            _userInputService.ParseCommandLineArguments(Arg.Any<string[]>()).Returns(expectedParsedArguments);
+            _userInterfaceService.ParseCommandLineArguments(Arg.Any<string[]>()).Returns(expectedParsedArguments);
 
             await _subjectUnderTest.RunProgram();
 
@@ -79,7 +79,7 @@ public class ConsolePhotoAlbumServiceTests : TestBase
                     { AvailableFlags.SearchText, expectedSearchText }
                 }
             };
-            _userInputService.ParseCommandLineArguments(Arg.Any<string[]>()).Returns(expectedParsedArguments);
+            _userInterfaceService.ParseCommandLineArguments(Arg.Any<string[]>()).Returns(expectedParsedArguments);
 
             await _subjectUnderTest.RunProgram();
 

@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 var serviceProvider = new ServiceCollection()
     .AddSingleton<IConsolePhotoAlbumService, ConsolePhotoAlbumService>()
     .AddSingleton<IConsoleAdapter, ConsoleAdapter>()
-    .AddScoped<IUserInputService, UserInputService>()
+    .AddScoped<IUserInterfaceService, UserInterfaceService>()
     .AddScoped<IDataRetrievalService, DataRetrievalService>()
     .AddSingleton<HttpClient>()
     .BuildServiceProvider();

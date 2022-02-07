@@ -5,14 +5,14 @@ using Interfaces;
 
 public class ConsolePhotoAlbumService : IConsolePhotoAlbumService
 {
-    private readonly IUserInputService _userInputService;
+    private readonly IUserInterfaceService _userInterfaceService;
     private readonly IDataRetrievalService _dataRetrievalService;
 
     public ConsolePhotoAlbumService(
-        IUserInputService userInputService,
+        IUserInterfaceService userInterfaceService,
         IDataRetrievalService dataRetrievalService)
     {
-        _userInputService = userInputService;
+        _userInterfaceService = userInterfaceService;
         _dataRetrievalService = dataRetrievalService;
     }
 
@@ -20,7 +20,7 @@ public class ConsolePhotoAlbumService : IConsolePhotoAlbumService
     {
         var commandLineArguments = Environment.GetCommandLineArgs();
 
-        var parsedCommandLineArguments = _userInputService.ParseCommandLineArguments(commandLineArguments);
+        var parsedCommandLineArguments = _userInterfaceService.ParseCommandLineArguments(commandLineArguments);
 
         if (parsedCommandLineArguments == null)
         {
@@ -35,13 +35,13 @@ public class ConsolePhotoAlbumService : IConsolePhotoAlbumService
         {
             var retrievedAlbums = (await _dataRetrievalService.RetrieveAlbums(albumId as int?, searchText as string)).ToList();
 
-            _userInputService.ShowAlbumListing(retrievedAlbums);
+            _userInterfaceService.ShowAlbumListing(retrievedAlbums);
         }
         else if (parsedCommandLineArguments.Resource == AvailableResources.Images)
         {
             var retrievedImages = (await _dataRetrievalService.RetrieveImages(albumId as int?, searchText as string)).ToList();
 
-            _userInputService.ShowImageListing(retrievedImages);
+            _userInterfaceService.ShowImageListing(retrievedImages);
         }
     }
 }

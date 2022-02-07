@@ -14,19 +14,19 @@ using ConsolePhotoAlbum.DataTransferObjects;
 using Extensions;
 using Xunit;
 
-public class UserInputServiceTests : TestBase
+public class UserInterfaceServiceTests : TestBase
 {
     private readonly IConsoleAdapter _consoleAdapter;
-    private readonly UserInputService _subjectUnderTest;
+    private readonly UserInterfaceService _subjectUnderTest;
 
-    protected UserInputServiceTests()
+    protected UserInterfaceServiceTests()
     {
         _consoleAdapter = Substitute.For<IConsoleAdapter>();
 
-        _subjectUnderTest = new UserInputService(_consoleAdapter);
+        _subjectUnderTest = new UserInterfaceService(_consoleAdapter);
     }
 
-    public class ParseCommandLineArguments : UserInputServiceTests
+    public class ParseCommandLineArguments : UserInterfaceServiceTests
     {
         [Fact]
         public void GivenNoUserArguments_ThenFailsToParse()
@@ -226,7 +226,7 @@ public class UserInputServiceTests : TestBase
         }
     }
 
-    public class ShowUserInstructions : UserInputServiceTests
+    public class ShowUserInstructions : UserInterfaceServiceTests
     {
         [Fact]
         public void WhenShowingUserInstructions_ThenShowsExpectedInstructions()
@@ -242,7 +242,7 @@ public class UserInputServiceTests : TestBase
         }
     }
 
-    public class ShowAlbumListing : UserInputServiceTests
+    public class ShowAlbumListing : UserInterfaceServiceTests
     {
         [Fact]
         public void WhenShowingAlbumListing_ThenOutputsHeaderAndDetailLines()
@@ -263,7 +263,7 @@ public class UserInputServiceTests : TestBase
         }
     }
 
-    public class ShowImageListing : UserInputServiceTests
+    public class ShowImageListing : UserInterfaceServiceTests
     {
         [Fact]
         public void WhenShowingImageListing_ThenOutputsHeaderAndDetailLines()
@@ -284,7 +284,7 @@ public class UserInputServiceTests : TestBase
         }
     }
 
-    public class ShowNoResultsFoundMessage : UserInputServiceTests
+    public class ShowNoResultsFoundMessage : UserInterfaceServiceTests
     {
         [Fact]
         public void WhenShowingNoResultsFoundMessage_ThenShowsMessage()
