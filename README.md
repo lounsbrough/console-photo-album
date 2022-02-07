@@ -77,3 +77,7 @@ You can run this application directly with dotnet if your machine has the `dotne
   ```sh
   docker-compose run consolephotoalbum get images --albumId=3 --searchText=laborum
   ```
+
+## Available commands
+- `get albums [--albumId=123] [--searchText=abc]`
+- `get images [--albumId=123] [--searchText=abc]`

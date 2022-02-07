@@ -74,8 +74,8 @@ public class UserInterfaceService : IUserInterfaceService
 
         var instructions =
             $"Please provide one of the following commands to this program:{newLine}{newLine}" +
-            $"get albums [--albumId=3] [--searchText=abc]{newLine}" +
-            $"get images [--albumId=3] [--searchText=abc]{newLine}";
+            $"get albums [--albumId=123] [--searchText=abc]{newLine}" +
+            $"get images [--albumId=123] [--searchText=abc]{newLine}";
 
         _consoleAdapter.WriteError(instructions);
     }

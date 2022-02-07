@@ -16,7 +16,7 @@ public class ShowUserInstructions : UserInterfaceServiceTestBase
             .First(x => x.GetMethodInfo().Name == nameof(ConsoleAdapterMock.WriteError)).GetArguments()[0];
 
         instructions.Should().Contain("Please provide one of the following commands to this program:");
-        instructions.Should().Contain("get albums [--albumId=3] [--searchText=abc]");
-        instructions.Should().Contain("get images [--albumId=3] [--searchText=abc]");
+        instructions.Should().Contain("get albums [--albumId=123] [--searchText=abc]");
+        instructions.Should().Contain("get images [--albumId=123] [--searchText=abc]");
     }
 }
