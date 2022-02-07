@@ -33,12 +33,7 @@ public class DataRetrievalService : IDataRetrievalService
             throw new HttpRequestException("Unable to retrieve images from api");
         }
 
-        var retrievedImages = JsonConvert.DeserializeObject<IEnumerable<Image>>(responseContent);
-
-        if (retrievedImages == null)
-        {
-            return new List<Image>();
-        }
+        var retrievedImages = JsonConvert.DeserializeObject<IEnumerable<Image>>(responseContent) ?? new List<Image>();
 
         if (!string.IsNullOrWhiteSpace(searchText))
         {
@@ -67,12 +62,7 @@ public class DataRetrievalService : IDataRetrievalService
             throw new HttpRequestException("Unable to retrieve albums from api");
         }
 
-        var retrievedAlbums = JsonConvert.DeserializeObject<IEnumerable<Album>>(responseContent);
-
-        if (retrievedAlbums == null)
-        {
-            return new List<Album>();
-        }
+        var retrievedAlbums = JsonConvert.DeserializeObject<IEnumerable<Album>>(responseContent) ?? new List<Album>();
 
         if (!string.IsNullOrWhiteSpace(searchText))
         {
