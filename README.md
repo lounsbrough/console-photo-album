@@ -1,9 +1,15 @@
 # Console Photo Album
 
-### This is my solution to the photo album code challenge from Lean Techniques.
+---
+## This repo is my solution to the photo album code challenge from Lean Techniques
+
+- I went through some iterations of trying to figure out how to set up the program parameters simply for the user.
+  - I ultimately landed on passing an `action`, a `resource`, and optional `flags`.
+  - This feels a lot like `kubectl` and other cli tools I've used, so it made sense to me.
+- There are more endpoints and methods available in the demo api I was asked to work with.
+  - I only implemented `get`ing `images` and `albums`, but I tried to write the code in a way that it could easily be augmented.
 
 ---
-
 ## Here is the challenge that was presented:
 
 ```
@@ -36,7 +42,6 @@ Example:
 ```
 
 ---
-
 ## Running locally
 
 You can run this application directly with dotnet if your machine has the dotnet sdk available, or you can run with Docker.
