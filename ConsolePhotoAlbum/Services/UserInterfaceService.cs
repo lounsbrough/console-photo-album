@@ -125,19 +125,21 @@ public class UserInterfaceService : IUserInterfaceService
 
     private void OutputListingTable(IReadOnlyList<string> headerFields, IReadOnlyList<string[]> detailRecords)
     {
+        const string fieldSeparator = " | ";
+
         var columnWidths = GetListingTableColumnWidths(headerFields, detailRecords);
 
         var paddedHeaderFields = headerFields.Select((field, index) => field.PadRight(columnWidths[index])).ToList();
 
-        _consoleAdapter.WriteWarningLine(string.Join(" | ", paddedHeaderFields));
+        _consoleAdapter.WriteWarningLine(string.Join(fieldSeparator, paddedHeaderFields));
 
         foreach (var detailRecord in detailRecords)
         {
             var paddedDetailFields = detailRecord.Select((field, index) => field.PadRight(columnWidths[index])).ToList();
-            _consoleAdapter.WriteInfoLine(string.Join(" | ", paddedDetailFields));
+            _consoleAdapter.WriteInfoLine(string.Join(fieldSeparator, paddedDetailFields));
         }
 
-        _consoleAdapter.WriteWarningLine(string.Join(" | ", paddedHeaderFields));
+        _consoleAdapter.WriteWarningLine(string.Join(fieldSeparator, paddedHeaderFields));
     }
 
     private bool ParseFlagArguments(IEnumerable<string> userProvidedArguments, ParsedCommandLineArguments parsedCommandLineArguments)
