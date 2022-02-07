@@ -7,7 +7,7 @@ using Xunit;
 public class EnumerableExtensionsTests : TestBase
 {
     [Fact]
-    public void Given()
+    public void GivenAnArrayOfStrings_WhenUsingWithIndex_ThenIndexedElementsShouldMatchDirectAccessElements()
     {
         var expectedEnumerable = new[]
         {
