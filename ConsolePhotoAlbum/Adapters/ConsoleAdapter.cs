@@ -5,13 +5,6 @@ using Interfaces;
 
 public class ConsoleAdapter : IConsoleAdapter
 {
-    public void WriteInfo(string output)
-    {
-        Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.Write(output);
-        Console.ResetColor();
-    }
-
     public void WriteError(string output)
     {
         Console.ForegroundColor = ConsoleColor.Red;

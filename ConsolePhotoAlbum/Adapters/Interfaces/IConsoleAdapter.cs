@@ -2,8 +2,6 @@
 
 public interface IConsoleAdapter
 {
-    void WriteInfo(string output);
-
     void WriteError(string output);
 
     void WriteInfoLine(string output);

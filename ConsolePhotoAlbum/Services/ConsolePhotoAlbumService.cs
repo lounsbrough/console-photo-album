@@ -35,13 +35,28 @@ public class ConsolePhotoAlbumService : IConsolePhotoAlbumService
         {
             var retrievedAlbums = (await _dataRetrievalService.RetrieveAlbums(albumId as int?, searchText as string)).ToList();
 
-            _userInterfaceService.ShowAlbumListing(retrievedAlbums);
+            if (retrievedAlbums.Any())
+            {
+                _userInterfaceService.ShowAlbumListing(retrievedAlbums);
+            }
+            else
+            {
+                _userInterfaceService.ShowNoResultsFoundMessage();
+            }
         }
         else if (parsedCommandLineArguments.Resource == AvailableResources.Images)
         {
-            var retrievedImages = (await _dataRetrievalService.RetrieveImages(albumId as int?, searchText as string)).ToList();
+            var retrievedImages = (await _dataRetrievalService.RetrieveImages(albumId as int?, searchText as string))
+                .ToList();
 
-            _userInterfaceService.ShowImageListing(retrievedImages);
+            if (retrievedImages.Any())
+            {
+                _userInterfaceService.ShowImageListing(retrievedImages);
+            }
+            else
+            {
+                _userInterfaceService.ShowNoResultsFoundMessage();
+            }
         }
     }
 }

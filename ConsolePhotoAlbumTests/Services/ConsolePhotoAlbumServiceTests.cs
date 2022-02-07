@@ -1,6 +1,7 @@
 ﻿namespace ConsolePhotoAlbumTests.Services;
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoFixture;
 using ConsolePhotoAlbum.DataTransferObjects;
@@ -64,6 +65,59 @@ public class ConsolePhotoAlbumServiceTests : TestBase
         }
 
         [Fact]
+        public async Task WhenRunningProgram_AndAlbumsReturned_ThenShowsAlbums()
+        {
+            var expectedAlbumId = Fixture.Create<int>();
+            var expectedSearchText = Fixture.Create<string>();
+            var expectedAlbums = Fixture.CreateMany<Album>().ToList();
+
+            var expectedParsedArguments = new ParsedCommandLineArguments
+            {
+                Action = AvailableActions.Get,
+                Resource = AvailableResources.Albums,
+                Flags = new Dictionary<AvailableFlags, object>
+                {
+                    { AvailableFlags.AlbumId, expectedAlbumId },
+                    { AvailableFlags.SearchText, expectedSearchText }
+                }
+            };
+            _userInterfaceService.ParseCommandLineArguments(Arg.Any<string[]>()).Returns(expectedParsedArguments);
+            _dataRetrievalService.RetrieveAlbums(expectedAlbumId, expectedSearchText).Returns(expectedAlbums);
+
+            await _subjectUnderTest.RunProgram();
+
+            await _dataRetrievalService.Received(1).RetrieveAlbums(expectedAlbumId, expectedSearchText);
+            _userInterfaceService.Received(1).ShowAlbumListing(Arg.Any<List<Album>>());
+            _userInterfaceService.DidNotReceive().ShowNoResultsFoundMessage();
+        }
+
+        [Fact]
+        public async Task WhenRunningProgram_AndNoAlbumsReturned_ThenShowsNoResultsFoundMessage()
+        {
+            var expectedAlbumId = Fixture.Create<int>();
+            var expectedSearchText = Fixture.Create<string>();
+
+            var expectedParsedArguments = new ParsedCommandLineArguments
+            {
+                Action = AvailableActions.Get,
+                Resource = AvailableResources.Albums,
+                Flags = new Dictionary<AvailableFlags, object>
+                {
+                    { AvailableFlags.AlbumId, expectedAlbumId },
+                    { AvailableFlags.SearchText, expectedSearchText }
+                }
+            };
+            _userInterfaceService.ParseCommandLineArguments(Arg.Any<string[]>()).Returns(expectedParsedArguments);
+            _dataRetrievalService.RetrieveAlbums(expectedAlbumId, expectedSearchText).Returns(new List<Album>());
+
+            await _subjectUnderTest.RunProgram();
+
+            await _dataRetrievalService.Received(1).RetrieveAlbums(expectedAlbumId, expectedSearchText);
+            _userInterfaceService.Received(1).ShowNoResultsFoundMessage();
+            _userInterfaceService.DidNotReceive().ShowAlbumListing(Arg.Any<List<Album>>());
+        }
+
+        [Fact]
         public async Task WhenRunningProgram_AndImagesRequested_ThenRetrievesImages()
         {
             var expectedAlbumId = Fixture.Create<int>();
@@ -84,6 +138,59 @@ public class ConsolePhotoAlbumServiceTests : TestBase
             await _subjectUnderTest.RunProgram();
 
             await _dataRetrievalService.Received(1).RetrieveImages(expectedAlbumId, expectedSearchText);
+        }
+
+        [Fact]
+        public async Task WhenRunningProgram_AndImagesReturned_ThenShowsImages()
+        {
+            var expectedAlbumId = Fixture.Create<int>();
+            var expectedSearchText = Fixture.Create<string>();
+            var expectedImages = Fixture.CreateMany<Image>().ToList();
+
+            var expectedParsedArguments = new ParsedCommandLineArguments
+            {
+                Action = AvailableActions.Get,
+                Resource = AvailableResources.Images,
+                Flags = new Dictionary<AvailableFlags, object>
+                {
+                    { AvailableFlags.AlbumId, expectedAlbumId },
+                    { AvailableFlags.SearchText, expectedSearchText }
+                }
+            };
+            _userInterfaceService.ParseCommandLineArguments(Arg.Any<string[]>()).Returns(expectedParsedArguments);
+            _dataRetrievalService.RetrieveImages(expectedAlbumId, expectedSearchText).Returns(expectedImages);
+
+            await _subjectUnderTest.RunProgram();
+
+            await _dataRetrievalService.Received(1).RetrieveImages(expectedAlbumId, expectedSearchText);
+            _userInterfaceService.Received(1).ShowImageListing(Arg.Any<List<Image>>());
+            _userInterfaceService.DidNotReceive().ShowNoResultsFoundMessage();
+        }
+
+        [Fact]
+        public async Task WhenRunningProgram_AndNoImagesReturned_ThenShowsNoResultsFoundMessage()
+        {
+            var expectedAlbumId = Fixture.Create<int>();
+            var expectedSearchText = Fixture.Create<string>();
+
+            var expectedParsedArguments = new ParsedCommandLineArguments
+            {
+                Action = AvailableActions.Get,
+                Resource = AvailableResources.Images,
+                Flags = new Dictionary<AvailableFlags, object>
+                {
+                    { AvailableFlags.AlbumId, expectedAlbumId },
+                    { AvailableFlags.SearchText, expectedSearchText }
+                }
+            };
+            _userInterfaceService.ParseCommandLineArguments(Arg.Any<string[]>()).Returns(expectedParsedArguments);
+            _dataRetrievalService.RetrieveImages(expectedAlbumId, expectedSearchText).Returns(new List<Image>());
+
+            await _subjectUnderTest.RunProgram();
+
+            await _dataRetrievalService.Received(1).RetrieveImages(expectedAlbumId, expectedSearchText);
+            _userInterfaceService.Received(1).ShowNoResultsFoundMessage();
+            _userInterfaceService.DidNotReceive().ShowImageListing(Arg.Any<List<Image>>());
         }
     }
 }
