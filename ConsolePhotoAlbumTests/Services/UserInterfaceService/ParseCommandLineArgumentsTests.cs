@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using AutoFixture;
 using ConsolePhotoAlbum.DataTransferObjects;
 using ConsolePhotoAlbum.Enums;
-using Extensions;
+using ConsolePhotoAlbum.Extensions;
 using FluentAssertions;
 using NSubstitute;
 using Xunit;
