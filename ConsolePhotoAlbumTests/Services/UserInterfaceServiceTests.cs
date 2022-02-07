@@ -245,20 +245,30 @@ public class UserInterfaceServiceTests : TestBase
     public class ShowAlbumListing : UserInterfaceServiceTests
     {
         [Fact]
-        public void WhenShowingAlbumListing_ThenOutputsHeaderAndDetailLines()
+        public void WhenShowingAlbumListing_ThenOutputsListingTableCorrectly()
         {
-            const string headerLine = "Id - Title";
-
-            var expectedAlbums = Fixture.CreateMany<Album>(2).ToList();
+            var expectedAlbums = new List<Album>
+            {
+                new ()
+                {
+                    Id = 1,
+                    Title = "First Album"
+                },
+                new ()
+                {
+                    Id = 10,
+                    Title = "Another Album"
+                }
+            };
 
             _subjectUnderTest.ShowAlbumListing(expectedAlbums);
 
             Received.InOrder(() =>
             {
-                _consoleAdapter.WriteInfoLine(headerLine);
-                _consoleAdapter.WriteInfoLine($"{expectedAlbums[0].Id} - {expectedAlbums[0].Title}");
-                _consoleAdapter.WriteInfoLine($"{expectedAlbums[1].Id} - {expectedAlbums[1].Title}");
-                _consoleAdapter.WriteInfoLine(headerLine);
+                _consoleAdapter.WriteWarningLine("Id | Title        ");
+                _consoleAdapter.WriteInfoLine("1  | First Album  ");
+                _consoleAdapter.WriteInfoLine("10 | Another Album");
+                _consoleAdapter.WriteWarningLine("Id | Title        ");
             });
         }
     }
@@ -266,20 +276,34 @@ public class UserInterfaceServiceTests : TestBase
     public class ShowImageListing : UserInterfaceServiceTests
     {
         [Fact]
-        public void WhenShowingImageListing_ThenOutputsHeaderAndDetailLines()
+        public void WhenShowingImageListing_ThenOutputsListingTableCorrectly()
         {
-            const string headerLine = "Album Id - Id - Title - Image Url";
-
-            var expectedImages = Fixture.CreateMany<Image>(2).ToList();
+            var expectedImages = new List<Image>
+            {
+                new ()
+                {
+                    AlbumId = 1,
+                    Id = 2,
+                    Title = "Image in album 1",
+                    Url = new Uri("https://awesome.images.com/")
+                },
+                new ()
+                {
+                    AlbumId = 10,
+                    Id = 20,
+                    Title = "Another image in album 10",
+                    Url = new Uri("https://cool.images.com/")
+                }
+            };
 
             _subjectUnderTest.ShowImageListing(expectedImages);
 
             Received.InOrder(() =>
             {
-                _consoleAdapter.WriteInfoLine(headerLine);
-                _consoleAdapter.WriteInfoLine($"{expectedImages[0].AlbumId} - {expectedImages[0].Id} - {expectedImages[0].Title} - {expectedImages[0].Url}");
-                _consoleAdapter.WriteInfoLine($"{expectedImages[1].AlbumId} - {expectedImages[1].Id} - {expectedImages[1].Title} - {expectedImages[1].Url}");
-                _consoleAdapter.WriteInfoLine(headerLine);
+                _consoleAdapter.WriteWarningLine("Album Id | Id | Title                     | Image Url                  ");
+                _consoleAdapter.WriteInfoLine("1        | 2  | Image in album 1          | https://awesome.images.com/");
+                _consoleAdapter.WriteInfoLine("10       | 20 | Another image in album 10 | https://cool.images.com/   ");
+                _consoleAdapter.WriteWarningLine("Album Id | Id | Title                     | Image Url                  ");
             });
         }
     }

@@ -81,42 +81,64 @@ public class UserInterfaceService : IUserInterfaceService
 
     public void ShowAlbumListing(List<Album> retrievedAlbums)
     {
-        const string headerLine = "Id - Title";
+        var headerFields = new[] { "Id", "Title" };
 
-        _consoleAdapter.WriteNewLines(1);
-        _consoleAdapter.WriteInfoLine(headerLine);
+        var detailRecords = retrievedAlbums.Select(album =>
+            new[]
+            {
+                album.Id.ToString(),
+                album.Title ?? string.Empty
+            }).ToList();
 
-        _consoleAdapter.WriteNewLines(1);
-        foreach (var retrievedAlbum in retrievedAlbums)
-        {
-            _consoleAdapter.WriteInfoLine($"{retrievedAlbum.Id} - {retrievedAlbum.Title}");
-        }
-
-        _consoleAdapter.WriteNewLines(1);
-        _consoleAdapter.WriteInfoLine(headerLine);
+        OutputListingTable(headerFields, detailRecords);
     }
 
     public void ShowImageListing(List<Image> retrievedImages)
     {
-        const string headerLine = "Album Id - Id - Title - Image Url";
+        var headerFields = new[] { "Album Id", "Id", "Title", "Image Url" };
 
-        _consoleAdapter.WriteNewLines(1);
-        _consoleAdapter.WriteInfoLine(headerLine);
+        var detailRecords = retrievedImages.Select(image =>
+            new[]
+            {
+                image.AlbumId.ToString(),
+                image.Id.ToString(),
+                image.Title ?? string.Empty,
+                image.Url?.ToString() ?? string.Empty
+            }).ToList();
 
-        _consoleAdapter.WriteNewLines(1);
-        foreach (var retrievedImage in retrievedImages)
-        {
-            _consoleAdapter.WriteInfoLine($"{retrievedImage.AlbumId} - {retrievedImage.Id} - {retrievedImage.Title} - {retrievedImage.Url}");
-        }
-
-        _consoleAdapter.WriteNewLines(1);
-        _consoleAdapter.WriteInfoLine(headerLine);
+        OutputListingTable(headerFields, detailRecords);
     }
 
     public void ShowNoResultsFoundMessage()
     {
         _consoleAdapter.WriteNewLines(1);
         _consoleAdapter.WriteWarningLine("No results found.");
+    }
+
+    private static List<int> GetListingTableColumnWidths(IReadOnlyList<string> headerFields, IReadOnlyList<string[]> detailRecords)
+    {
+        var maxDataLengths = headerFields.Select((headerField, index) =>
+            detailRecords.Select(fields => fields[index].Length).Max());
+
+        return maxDataLengths.Select((dataLength, index) =>
+            Math.Max(dataLength, headerFields[index].Length)).ToList();
+    }
+
+    private void OutputListingTable(IReadOnlyList<string> headerFields, IReadOnlyList<string[]> detailRecords)
+    {
+        var columnWidths = GetListingTableColumnWidths(headerFields, detailRecords);
+
+        var paddedHeaderFields = headerFields.Select((field, index) => field.PadRight(columnWidths[index])).ToList();
+
+        _consoleAdapter.WriteWarningLine(string.Join(" | ", paddedHeaderFields));
+
+        foreach (var detailRecord in detailRecords)
+        {
+            var paddedDetailFields = detailRecord.Select((field, index) => field.PadRight(columnWidths[index])).ToList();
+            _consoleAdapter.WriteInfoLine(string.Join(" | ", paddedDetailFields));
+        }
+
+        _consoleAdapter.WriteWarningLine(string.Join(" | ", paddedHeaderFields));
     }
 
     private bool ParseFlagArguments(IEnumerable<string> userProvidedArguments, ParsedCommandLineArguments parsedCommandLineArguments)
