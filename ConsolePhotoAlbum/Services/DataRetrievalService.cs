@@ -49,9 +49,14 @@ public class DataRetrievalService : IDataRetrievalService
         return retrievedImages;
     }
 
-    public async Task<IEnumerable<Album>> RetrieveAlbums(string? searchText)
+    public async Task<IEnumerable<Album>> RetrieveAlbums(int? albumId, string? searchText)
     {
-        const string albumsEndpoint = "/albums";
+        var albumsEndpoint = "/albums";
+
+        if (albumId != null)
+        {
+            albumsEndpoint += $"?id={albumId}";
+        }
 
         var response = await _httpClient.GetAsync(albumsEndpoint);
 

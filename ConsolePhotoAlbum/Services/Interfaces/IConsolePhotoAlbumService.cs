@@ -3,7 +3,5 @@
     public interface IConsolePhotoAlbumService
     {
         Task RunProgram();
-
-        Task<bool> RunMenuLoop();
     }
 }

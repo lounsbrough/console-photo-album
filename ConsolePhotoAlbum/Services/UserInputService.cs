@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using Adapters.Interfaces;
 using Enums;
 using DataTransferObjects;
@@ -17,42 +16,84 @@ public class UserInputService : IUserInputService
         _consoleAdapter = consoleAdapter;
     }
 
-    public void ShowUserInstructions()
+    public ParsedCommandLineArguments? ParseCommandLineArguments(IEnumerable<string> commandLineArguments)
     {
-        _consoleAdapter.Clear();
+        var userProvidedArguments = commandLineArguments.Skip(1).ToList();
 
-        var newLine = Environment.NewLine;
+        if (userProvidedArguments.Count < 2)
+        {
+            ShowUserInstructions();
 
-        var albumCommand = AvailableUserCommands.Commands
-            .First(command => command.Command == UserCommands.Album);
+            return null;
+        }
 
-        var searchCommand = AvailableUserCommands.Commands
-            .First(command => command.Command == UserCommands.Search);
+        var parsedCommandLineArguments = new ParsedCommandLineArguments();
 
-        var allCommand = AvailableUserCommands.Commands
-            .First(command => command.Command == UserCommands.All);
+        var actionString = userProvidedArguments[0];
+        var resourceString = userProvidedArguments[1];
 
-        var exitCommand = AvailableUserCommands.Commands
-            .First(command => command.Command == UserCommands.Exit);
+        if (Enum.TryParse(actionString, true, out AvailableActions action))
+        {
+            parsedCommandLineArguments.Action = action;
+        }
+        else
+        {
+            _consoleAdapter.WriteErrorLine($"Unknown action \"{actionString}\".");
 
-        var instructions =
-            $"Please choose one or more commands:{newLine}{newLine}" +
-            $"{albumCommand.Flag} {{id}} - Find images in a given album id.{newLine}" +
-            $"  Example: {albumCommand.Flag} 3{newLine}{newLine}" +
-            $"{searchCommand.Flag} {{text}} - Find images with names matching the search text.{newLine}" +
-            $"  Example: {searchCommand.Flag} velit{newLine}{newLine}" +
-            $"{allCommand.Flag} - Find all images.{newLine}{newLine}" +
-            $"{exitCommand.Flag} - Exit this program.{newLine}{newLine}" +
-            "Enter command: ";
+            return null;
+        }
 
-        _consoleAdapter.Write(instructions);
+        if (Enum.TryParse(resourceString, true, out AvailableResources resource))
+        {
+            parsedCommandLineArguments.Resource = resource;
+        }
+        else
+        {
+            _consoleAdapter.WriteErrorLine($"Unknown resource \"{resourceString}\".");
+
+            return null;
+        }
+
+        if (userProvidedArguments.Count <= 2)
+        {
+            return parsedCommandLineArguments;
+        }
+
+        if (!ParseFlagArguments(userProvidedArguments, parsedCommandLineArguments))
+        {
+            return null;
+        }
+
+        return parsedCommandLineArguments;
     }
 
-    public void ShowReturnToMenuPrompt()
+    public void ShowUserInstructions()
     {
+        var newLine = Environment.NewLine;
+
+        var instructions =
+            $"Please provide one of the following commands to this program:{newLine}{newLine}" +
+            $"get albums [--albumId=3] [--searchText=abc]{newLine}" +
+            $"get images [--albumId=3] [--searchText=abc]{newLine}";
+
+        _consoleAdapter.WriteError(instructions);
+    }
+
+    public void ShowAlbumListing(List<Album> retrievedAlbums)
+    {
+        const string headerLine = "Id - Title";
+
         WriteNewLines(2);
-        _consoleAdapter.WriteLine("Press Enter to return to commands menu...");
-        _consoleAdapter.ReadLine();
+        _consoleAdapter.WriteLine(headerLine);
+
+        WriteNewLines(1);
+        foreach (var retrievedAlbum in retrievedAlbums)
+        {
+            _consoleAdapter.WriteInfoLine($"{retrievedAlbum.Id} - {retrievedAlbum.Title}");
+        }
+
+        WriteNewLines(1);
+        _consoleAdapter.WriteLine(headerLine);
     }
 
     public void ShowImageListing(List<Image> retrievedImages)
@@ -65,74 +106,52 @@ public class UserInputService : IUserInputService
         WriteNewLines(1);
         foreach (var retrievedImage in retrievedImages)
         {
-            _consoleAdapter.WriteInfoLine($"{retrievedImage.AlbumId} - {retrievedImage.Id} - {retrievedImage.Title} - {retrievedImage.ImageUrl}");
+            _consoleAdapter.WriteInfoLine($"{retrievedImage.AlbumId} - {retrievedImage.Id} - {retrievedImage.Title} - {retrievedImage.Url}");
         }
 
         WriteNewLines(1);
         _consoleAdapter.WriteLine(headerLine);
     }
 
-    public void ShowNoImagesFoundMessage()
+    public void ShowNoResultsFoundMessage()
     {
         WriteNewLines(2);
-        _consoleAdapter.WriteWarningLine("No images found.");
+        _consoleAdapter.WriteWarningLine("No results found.");
     }
 
-    public List<ParsedUserCommand> GetParsedUserCommands()
+    private bool ParseFlagArguments(IEnumerable<string> userProvidedArguments, ParsedCommandLineArguments parsedCommandLineArguments)
     {
-        var parsedUserCommands = new List<ParsedUserCommand>();
-
-        var userInput = _consoleAdapter.ReadLine() ?? string.Empty;
-
-        foreach (var availableCommand in AvailableUserCommands.Commands)
+        foreach (var flagString in userProvidedArguments.Skip(2))
         {
-            var pattern = $"{availableCommand.Flag}{(availableCommand.HasArgument ? @"\s+([^\s]+)" : string.Empty)}";
+            var flagName = flagString.Replace("--", string.Empty).Split("=").FirstOrDefault();
+            var flagValue = string.Join(string.Empty, flagString.Split("=").Skip(1));
 
-            var regex = new Regex(pattern, RegexOptions.IgnoreCase);
-
-            var match = regex.Match(userInput);
-
-            if (match.Success)
+            if (Enum.TryParse(flagName, true, out AvailableFlags flag))
             {
-                parsedUserCommands.Add(new ParsedUserCommand
+                if (flag == AvailableFlags.AlbumId)
                 {
-                    Command = availableCommand.Command,
-                    HasArgument = availableCommand.HasArgument,
-                    Flag = availableCommand.Flag,
-                    IsExclusive = availableCommand.IsExclusive,
-                    Argument = match.Groups[1].Value
-                });
+                    if (int.TryParse(flagValue, out var parsedAlbumId))
+                    {
+                        parsedCommandLineArguments.Flags.Add(flag, parsedAlbumId);
+                    }
+                    else
+                    {
+                        _consoleAdapter.WriteErrorLine("Flag \"--albumId\" must be a number.");
+
+                        return false;
+                    }
+                }
+                else
+                {
+                    parsedCommandLineArguments.Flags.Add(flag, flagValue);
+                }
             }
-        }
+            else
+            {
+                _consoleAdapter.WriteErrorLine($"Unknown flag \"{flagString}\".");
 
-        return parsedUserCommands;
-    }
-
-    public bool ValidateUserCommands(List<ParsedUserCommand> parsedUserCommands)
-    {
-        if (!parsedUserCommands.Any())
-        {
-            _consoleAdapter.WriteErrorLine("Please choose at least one valid command.");
-
-            return false;
-        }
-
-        var exclusiveCommand = parsedUserCommands.FirstOrDefault(command => command.IsExclusive);
-
-        if (parsedUserCommands.Count > 1 && exclusiveCommand != null)
-        {
-            _consoleAdapter.WriteErrorLine($"Command {exclusiveCommand.Flag} may not be combined with other commands.");
-
-            return false;
-        }
-
-        var commandMissingArgument = parsedUserCommands.FirstOrDefault(command => command.HasArgument && string.IsNullOrWhiteSpace(command.Argument));
-
-        if (commandMissingArgument != null)
-        {
-            _consoleAdapter.WriteErrorLine($"Command {commandMissingArgument.Flag} requires an argument.");
-
-            return false;
+                return false;
+            }
         }
 
         return true;

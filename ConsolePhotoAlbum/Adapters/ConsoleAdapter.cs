@@ -5,14 +5,16 @@ using Interfaces;
 
 public class ConsoleAdapter : IConsoleAdapter
 {
-    public void Clear()
-    {
-        Console.Clear();
-    }
-
     public void Write(string output)
     {
         Console.Write(output);
+    }
+
+    public void WriteError(string output)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.Write(output);
+        Console.ResetColor();
     }
 
     public void WriteLine(string output)
@@ -39,10 +41,5 @@ public class ConsoleAdapter : IConsoleAdapter
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine(output);
         Console.ResetColor();
-    }
-
-    public string? ReadLine()
-    {
-        return Console.ReadLine();
     }
 }

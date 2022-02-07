@@ -11,6 +11,7 @@ using FluentAssertions;
 using NSubstitute;
 using ConsolePhotoAlbum.Adapters.Interfaces;
 using ConsolePhotoAlbum.DataTransferObjects;
+using Extensions;
 using Xunit;
 
 public class UserInputServiceTests : TestBase
@@ -25,57 +26,240 @@ public class UserInputServiceTests : TestBase
         _subjectUnderTest = new UserInputService(_consoleAdapter);
     }
 
-    public class ShowUserInstructions : UserInputServiceTests
+    public class ParseCommandLineArguments : UserInputServiceTests
     {
         [Fact]
-        public void WhenShowingUserInstructions_ThenClearsScreenBeforeOutput()
+        public void GivenNoUserArguments_ThenFailsToParse()
         {
-            _subjectUnderTest.ShowUserInstructions();
+            var expectedCommandLineArguments = new[]
+            {
+                "dll path"
+            };
 
-            _consoleAdapter.Received(1).Clear();
+            var parsedCommandLineArguments = _subjectUnderTest.ParseCommandLineArguments(expectedCommandLineArguments);
+
+            _consoleAdapter.Received(1).WriteError(Arg.Is<string>(s =>
+                s.Contains("Please provide one of the following commands to this program:")));
+            parsedCommandLineArguments.Should().BeNull();
         }
 
         [Fact]
-        public void WhenShowingUserInstructions_ThenShowsExpectedInstructions()
+        public void GivenOneUserArgument_ThenFailsToParse()
         {
-            var albumCommand = AvailableUserCommands.Commands
-            .First(command => command.Command == UserCommands.Album);
+            var expectedCommandLineArguments = new[]
+            {
+                Fixture.Create<string>(),
+                Fixture.Create<string>()
+            };
 
-            var searchCommand = AvailableUserCommands.Commands
-                .First(command => command.Command == UserCommands.Search);
+            var parsedCommandLineArguments = _subjectUnderTest.ParseCommandLineArguments(expectedCommandLineArguments);
 
-            var allCommand = AvailableUserCommands.Commands
-                .First(command => command.Command == UserCommands.All);
+            _consoleAdapter.Received(1).WriteError(Arg.Is<string>(s =>
+                s.Contains("Please provide one of the following commands to this program:")));
+            parsedCommandLineArguments.Should().BeNull();
+        }
 
-            var exitCommand = AvailableUserCommands.Commands
-                .First(command => command.Command == UserCommands.Exit);
+        [Fact]
+        public void GivenActionInvalid_ThenFailsToParse()
+        {
+            var actionString = Fixture.Create<string>();
 
-            _subjectUnderTest.ShowUserInstructions();
+            var expectedCommandLineArguments = new[]
+            {
+                Fixture.Create<string>(),
+                actionString,
+                Chance.PickEnum<AvailableResources>().ToString().RandomizeCase()
+            };
 
-            var instructions = (string?)_consoleAdapter.ReceivedCalls()
-                .First(x => x.GetMethodInfo().Name == nameof(_consoleAdapter.Write)).GetArguments()[0];
+            var parsedCommandLineArguments = _subjectUnderTest.ParseCommandLineArguments(expectedCommandLineArguments);
 
-            instructions.Should().Contain("Please choose one or more commands:");
-            instructions.Should().Contain($"{albumCommand.Flag} {{id}} - Find images in a given album id.");
-            instructions.Should().MatchRegex($@"Example: {albumCommand.Flag} \d*");
-            instructions.Should().Contain($"{searchCommand.Flag} {{text}} - Find images with names matching the search text.");
-            instructions.Should().MatchRegex($@"Example: {searchCommand.Flag} [a-zA-Z]*");
-            instructions.Should().Contain($"{allCommand.Flag} - Find all images.");
-            instructions.Should().Contain($"{exitCommand.Flag} - Exit this program.");
-            instructions.Should().Contain("Enter command:");
+            _consoleAdapter.Received(1).WriteErrorLine($"Unknown action \"{actionString}\".");
+            parsedCommandLineArguments.Should().BeNull();
+        }
+
+        [Fact]
+        public void GivenResourceInvalid_ThenFailsToParse()
+        {
+            var resourceString = Fixture.Create<string>();
+
+            var expectedCommandLineArguments = new[]
+            {
+                Fixture.Create<string>(),
+                Chance.PickEnum<AvailableActions>().ToString().RandomizeCase(),
+                resourceString
+            };
+
+            var parsedCommandLineArguments = _subjectUnderTest.ParseCommandLineArguments(expectedCommandLineArguments);
+
+            _consoleAdapter.Received(1).WriteErrorLine($"Unknown resource \"{resourceString}\".");
+            parsedCommandLineArguments.Should().BeNull();
+        }
+
+        [Fact]
+        public void GivenValidAction_AndValidResource_ThenParses()
+        {
+            var expectedAction = Chance.PickEnum<AvailableActions>();
+            var expectedResource = Chance.PickEnum<AvailableResources>();
+
+            var expectedParsedArguments = new ParsedCommandLineArguments
+            {
+                Action = expectedAction,
+                Resource = expectedResource
+            };
+
+            var expectedCommandLineArguments = new[]
+            {
+                Fixture.Create<string>(),
+                expectedAction.ToString().RandomizeCase(),
+                expectedResource.ToString().RandomizeCase()
+            };
+
+            var parsedCommandLineArguments = _subjectUnderTest.ParseCommandLineArguments(expectedCommandLineArguments);
+
+            _consoleAdapter.DidNotReceive().WriteErrorLine(Arg.Any<string>());
+            parsedCommandLineArguments.Should().BeEquivalentTo(expectedParsedArguments);
+        }
+
+        [Fact]
+        public void GivenInvalidFlag_ThenFailsToParse()
+        {
+            var flagString = Fixture.Create<string>();
+
+            var expectedCommandLineArguments = new[]
+            {
+                Fixture.Create<string>(),
+                Chance.PickEnum<AvailableActions>().ToString().RandomizeCase(),
+                Chance.PickEnum<AvailableResources>().ToString().RandomizeCase(),
+                flagString
+            };
+
+            var parsedCommandLineArguments = _subjectUnderTest.ParseCommandLineArguments(expectedCommandLineArguments);
+
+            _consoleAdapter.Received(1).WriteErrorLine($"Unknown flag \"{flagString}\".");
+            parsedCommandLineArguments.Should().BeNull();
+        }
+
+        [Fact]
+        public void GivenValidAction_AndValidResource_AndSearchTextFlag_ThenParses()
+        {
+            var expectedAction = Chance.PickEnum<AvailableActions>();
+            var expectedResource = Chance.PickEnum<AvailableResources>();
+            const AvailableFlags expectedFlag = AvailableFlags.SearchText;
+            var expectedFlagValue = Fixture.Create<object>();
+
+            var expectedParsedArguments = new ParsedCommandLineArguments
+            {
+                Action = expectedAction,
+                Resource = expectedResource,
+                Flags = new Dictionary<AvailableFlags, object>
+                {
+                    { expectedFlag, expectedFlagValue }
+                }
+            };
+
+            var expectedCommandLineArguments = new[]
+            {
+                Fixture.Create<string>(),
+                expectedAction.ToString().RandomizeCase(),
+                expectedResource.ToString().RandomizeCase(),
+                $"--{expectedFlag.ToString().RandomizeCase()}={expectedFlagValue}"
+            };
+
+            var parsedCommandLineArguments = _subjectUnderTest.ParseCommandLineArguments(expectedCommandLineArguments);
+
+            _consoleAdapter.DidNotReceive().WriteErrorLine(Arg.Any<string>());
+            parsedCommandLineArguments.Should().BeEquivalentTo(expectedParsedArguments);
+        }
+
+        [Fact]
+        public void GivenValidAction_AndValidResource_AndIntegerAlbumIdFlag_ThenParses()
+        {
+            var expectedAction = Chance.PickEnum<AvailableActions>();
+            var expectedResource = Chance.PickEnum<AvailableResources>();
+            const AvailableFlags expectedFlag = AvailableFlags.AlbumId;
+            var expectedFlagValue = Fixture.Create<int>();
+
+            var expectedParsedArguments = new ParsedCommandLineArguments
+            {
+                Action = expectedAction,
+                Resource = expectedResource,
+                Flags = new Dictionary<AvailableFlags, object>
+                {
+                    { expectedFlag, expectedFlagValue }
+                }
+            };
+
+            var expectedCommandLineArguments = new[]
+            {
+                Fixture.Create<string>(),
+                expectedAction.ToString().RandomizeCase(),
+                expectedResource.ToString().RandomizeCase(),
+                $"--{expectedFlag.ToString().RandomizeCase()}={expectedFlagValue}"
+            };
+
+            var parsedCommandLineArguments = _subjectUnderTest.ParseCommandLineArguments(expectedCommandLineArguments);
+
+            _consoleAdapter.DidNotReceive().WriteErrorLine(Arg.Any<string>());
+            parsedCommandLineArguments.Should().BeEquivalentTo(expectedParsedArguments);
+        }
+
+        [Fact]
+        public void GivenValidAction_AndValidResource_AndNonNumericAlbumIdFlag_ThenFailsToParse()
+        {
+            var expectedAction = Chance.PickEnum<AvailableActions>();
+            var expectedResource = Chance.PickEnum<AvailableResources>();
+            const AvailableFlags expectedFlag = AvailableFlags.AlbumId;
+            var expectedFlagValue = Fixture.Create<string>();
+
+            var expectedCommandLineArguments = new[]
+            {
+                Fixture.Create<string>(),
+                expectedAction.ToString().RandomizeCase(),
+                expectedResource.ToString().RandomizeCase(),
+                $"--{expectedFlag.ToString().RandomizeCase()}={expectedFlagValue}"
+            };
+
+            var parsedCommandLineArguments = _subjectUnderTest.ParseCommandLineArguments(expectedCommandLineArguments);
+
+            _consoleAdapter.Received(1).WriteErrorLine("Flag \"--albumId\" must be a number.");
+            parsedCommandLineArguments.Should().BeNull();
         }
     }
 
-    public class ShowReturnToMenuPrompt : UserInputServiceTests
+    public class ShowUserInstructions : UserInputServiceTests
     {
         [Fact]
-        public void WhenShowingReturnToMenuPrompt_ThenShowsMessage_AndWaitsForUserInput()
+        public void WhenShowingUserInstructions_ThenShowsExpectedInstructions()
         {
-            _subjectUnderTest.ShowReturnToMenuPrompt();
+            _subjectUnderTest.ShowUserInstructions();
 
-            _consoleAdapter.Received(1).Write($"{Environment.NewLine}{Environment.NewLine}");
-            _consoleAdapter.Received(1).WriteLine("Press Enter to return to commands menu...");
-            _consoleAdapter.Received(1).ReadLine();
+            var instructions = (string?)_consoleAdapter.ReceivedCalls()
+                .First(x => x.GetMethodInfo().Name == nameof(_consoleAdapter.WriteError)).GetArguments()[0];
+
+            instructions.Should().Contain("Please provide one of the following commands to this program:");
+            instructions.Should().Contain("get albums [--albumId=3] [--searchText=abc]");
+            instructions.Should().Contain("get images [--albumId=3] [--searchText=abc]");
+        }
+    }
+
+    public class ShowAlbumListing : UserInputServiceTests
+    {
+        [Fact]
+        public void WhenShowingAlbumListing_ThenOutputsHeaderAndDetailLines()
+        {
+            const string headerLine = "Id - Title";
+
+            var expectedAlbums = Fixture.CreateMany<Album>(2).ToList();
+
+            _subjectUnderTest.ShowAlbumListing(expectedAlbums);
+
+            Received.InOrder(() =>
+            {
+                _consoleAdapter.WriteLine(headerLine);
+                _consoleAdapter.WriteInfoLine($"{expectedAlbums[0].Id} - {expectedAlbums[0].Title}");
+                _consoleAdapter.WriteInfoLine($"{expectedAlbums[1].Id} - {expectedAlbums[1].Title}");
+                _consoleAdapter.WriteLine(headerLine);
+            });
         }
     }
 
@@ -93,300 +277,22 @@ public class UserInputServiceTests : TestBase
             Received.InOrder(() =>
             {
                 _consoleAdapter.WriteLine(headerLine);
-                _consoleAdapter.WriteInfoLine($"{expectedImages[0].AlbumId} - {expectedImages[0].Id} - {expectedImages[0].Title} - {expectedImages[0].ImageUrl}");
-                _consoleAdapter.WriteInfoLine($"{expectedImages[1].AlbumId} - {expectedImages[1].Id} - {expectedImages[1].Title} - {expectedImages[1].ImageUrl}");
+                _consoleAdapter.WriteInfoLine($"{expectedImages[0].AlbumId} - {expectedImages[0].Id} - {expectedImages[0].Title} - {expectedImages[0].Url}");
+                _consoleAdapter.WriteInfoLine($"{expectedImages[1].AlbumId} - {expectedImages[1].Id} - {expectedImages[1].Title} - {expectedImages[1].Url}");
                 _consoleAdapter.WriteLine(headerLine);
             });
         }
     }
 
-    public class ShowNoImagesFoundMessage : UserInputServiceTests
+    public class ShowNoResultsFoundMessage : UserInputServiceTests
     {
         [Fact]
-        public void WhenShowingNoImagesFoundMessage_ThenShowsMessage()
+        public void WhenShowingNoResultsFoundMessage_ThenShowsMessage()
         {
-            _subjectUnderTest.ShowNoImagesFoundMessage();
+            _subjectUnderTest.ShowNoResultsFoundMessage();
 
             _consoleAdapter.Received(1).Write($"{Environment.NewLine}{Environment.NewLine}");
-            _consoleAdapter.Received(1).WriteWarningLine("No images found.");
-        }
-    }
-
-    public class GetParsedUserCommands : UserInputServiceTests
-    {
-        [Fact]
-        public void GivenUserEntersNothing_WhenGettingParsedUserCommands_ThenReturnsEmptyList()
-        {
-            _consoleAdapter.ReadLine().Returns(string.Empty);
-
-            var actualParsedUserCommands = _subjectUnderTest.GetParsedUserCommands();
-
-            actualParsedUserCommands.Should().BeEmpty();
-        }
-
-        [Fact]
-        public void GivenUserEntersNonMatchingString_WhenGettingParsedUserCommands_ThenReturnsEmptyList()
-        {
-            _consoleAdapter.ReadLine().Returns(Fixture.Create<string>());
-
-            var actualParsedUserCommands = _subjectUnderTest.GetParsedUserCommands();
-
-            actualParsedUserCommands.Should().BeEmpty();
-        }
-
-        [Fact]
-        public void GivenUserEntersStringMatchingAlbum_WhenGettingParsedUserCommands_ThenReturnsCorrectCommand()
-        {
-            _consoleAdapter.ReadLine().Returns("abc --album 123 def");
-
-            var expectedParsedUsedCommand = new ParsedUserCommand
-            {
-                Command = UserCommands.Album,
-                HasArgument = true,
-                Argument = "123",
-                Flag = "--album",
-                IsExclusive = false
-            };
-
-            var actualParsedUserCommands = _subjectUnderTest.GetParsedUserCommands();
-
-            actualParsedUserCommands.First().Should().BeEquivalentTo(expectedParsedUsedCommand);
-        }
-
-        [Fact]
-        public void GivenUserEntersStringMatchingSearch_WhenGettingParsedUserCommands_ThenReturnsCorrectCommand()
-        {
-            _consoleAdapter.ReadLine().Returns("abc --search text def");
-
-            var expectedParsedUsedCommand = new ParsedUserCommand
-            {
-                Command = UserCommands.Search,
-                HasArgument = true,
-                Argument = "text",
-                Flag = "--search",
-                IsExclusive = false
-            };
-
-            var actualParsedUserCommands = _subjectUnderTest.GetParsedUserCommands();
-
-            actualParsedUserCommands.First().Should().BeEquivalentTo(expectedParsedUsedCommand);
-        }
-
-        [Fact]
-        public void GivenUserEntersStringMatchingAll_WhenGettingParsedUserCommands_ThenReturnsCorrectCommand()
-        {
-            _consoleAdapter.ReadLine().Returns("abc --all def");
-
-            var expectedParsedUsedCommand = new ParsedUserCommand
-            {
-                Command = UserCommands.All,
-                HasArgument = false,
-                Argument = string.Empty,
-                Flag = "--all",
-                IsExclusive = true
-            };
-
-            var actualParsedUserCommands = _subjectUnderTest.GetParsedUserCommands();
-
-            actualParsedUserCommands.First().Should().BeEquivalentTo(expectedParsedUsedCommand);
-        }
-
-        [Fact]
-        public void GivenUserEntersStringMatchingExit_WhenGettingParsedUserCommands_ThenReturnsCorrectCommand()
-        {
-            _consoleAdapter.ReadLine().Returns("abc --exit def");
-
-            var expectedParsedUsedCommand = new ParsedUserCommand
-            {
-                Command = UserCommands.Exit,
-                HasArgument = false,
-                Argument = string.Empty,
-                Flag = "--exit",
-                IsExclusive = true
-            };
-
-            var actualParsedUserCommands = _subjectUnderTest.GetParsedUserCommands();
-
-            actualParsedUserCommands.First().Should().BeEquivalentTo(expectedParsedUsedCommand);
-        }
-    }
-
-    public class ValidateUserCommands : UserInputServiceTests
-    {
-        [Fact]
-        public void GivenEmptyListOfCommands_WhenValidatingCommands_ThenIsNotValid()
-        {
-            var expectedUserCommands = new List<ParsedUserCommand>();
-
-            var commandsValid = _subjectUnderTest.ValidateUserCommands(expectedUserCommands);
-
-            commandsValid.Should().BeFalse();
-            _consoleAdapter.Received(1).WriteErrorLine("Please choose at least one valid command.");
-        }
-
-        [Fact]
-        public void GivenAlbumCommand_AndArgument_WhenValidatingCommands_ThenIsValid()
-        {
-            var albumCommand = AvailableUserCommands.Commands
-                .Select(availableCommand => new ParsedUserCommand
-                {
-                    Command = availableCommand.Command,
-                    HasArgument = availableCommand.HasArgument,
-                    Argument = Fixture.Create<string>(),
-                    Flag = availableCommand.Flag,
-                    IsExclusive = availableCommand.IsExclusive
-                })
-                .First(command => command.Command == UserCommands.Album);
-
-            var expectedUserCommands = new List<ParsedUserCommand> { albumCommand };
-
-            var commandsValid = _subjectUnderTest.ValidateUserCommands(expectedUserCommands);
-
-            commandsValid.Should().BeTrue();
-            _consoleAdapter.DidNotReceive().WriteErrorLine(Arg.Any<string>());
-        }
-
-        [Fact]
-        public void GivenAlbumCommand_AndNoArgument_WhenValidatingCommands_ThenIsNotValid()
-        {
-            var albumCommand = AvailableUserCommands.Commands
-                .Select(availableCommand => new ParsedUserCommand
-                {
-                    Command = availableCommand.Command,
-                    HasArgument = availableCommand.HasArgument,
-                    Argument = string.Empty,
-                    Flag = availableCommand.Flag,
-                    IsExclusive = availableCommand.IsExclusive
-                })
-                .First(command => command.Command == UserCommands.Album);
-
-            var expectedUserCommands = new List<ParsedUserCommand> { albumCommand };
-
-            var commandsValid = _subjectUnderTest.ValidateUserCommands(expectedUserCommands);
-
-            commandsValid.Should().BeFalse();
-            _consoleAdapter.Received(1).WriteErrorLine($"Command {albumCommand.Flag} requires an argument.");
-        }
-
-        [Fact]
-        public void GivenSearchCommand_AndArgument_WhenValidatingCommands_ThenIsValid()
-        {
-            var searchCommand = AvailableUserCommands.Commands
-                .Select(availableCommand => new ParsedUserCommand
-                {
-                    Command = availableCommand.Command,
-                    HasArgument = availableCommand.HasArgument,
-                    Argument = Fixture.Create<string>(),
-                    Flag = availableCommand.Flag,
-                    IsExclusive = availableCommand.IsExclusive
-                })
-                .First(command => command.Command == UserCommands.Search);
-
-            var expectedUserCommands = new List<ParsedUserCommand> { searchCommand };
-
-            var commandsValid = _subjectUnderTest.ValidateUserCommands(expectedUserCommands);
-
-            commandsValid.Should().BeTrue();
-            _consoleAdapter.DidNotReceive().WriteErrorLine(Arg.Any<string>());
-        }
-
-        [Fact]
-        public void GivenSearchCommand_AndNoArgument_WhenValidatingCommands_ThenIsNotValid()
-        {
-            var searchCommand = AvailableUserCommands.Commands
-                .Select(availableCommand => new ParsedUserCommand
-                {
-                    Command = availableCommand.Command,
-                    HasArgument = availableCommand.HasArgument,
-                    Argument = string.Empty,
-                    Flag = availableCommand.Flag,
-                    IsExclusive = availableCommand.IsExclusive
-                })
-                .First(command => command.Command == UserCommands.Search);
-
-            var expectedUserCommands = new List<ParsedUserCommand> { searchCommand };
-
-            var commandsValid = _subjectUnderTest.ValidateUserCommands(expectedUserCommands);
-
-            commandsValid.Should().BeFalse();
-            _consoleAdapter.Received(1).WriteErrorLine($"Command {searchCommand.Flag} requires an argument.");
-        }
-
-        [Fact]
-        public void GivenOnlyAllCommand_WhenValidatingCommands_ThenIsValid()
-        {
-            var allCommand = AvailableUserCommands.Commands
-                .Select(availableCommand => new ParsedUserCommand
-                {
-                    Command = availableCommand.Command,
-                    HasArgument = availableCommand.HasArgument,
-                    Argument = null,
-                    Flag = availableCommand.Flag,
-                    IsExclusive = availableCommand.IsExclusive
-                })
-                .First(command => command.Command == UserCommands.All);
-
-            var expectedUserCommands = new List<ParsedUserCommand> { allCommand };
-
-            var commandsValid = _subjectUnderTest.ValidateUserCommands(expectedUserCommands);
-
-            commandsValid.Should().BeTrue();
-            _consoleAdapter.DidNotReceive().WriteErrorLine(Arg.Any<string>());
-        }
-
-        [Fact]
-        public void GivenAllCommand_AndAlbumCommand_WhenValidatingCommands_ThenIsNotValid()
-        {
-            var allCommand = AvailableUserCommands.Commands
-                .Select(availableCommand => new ParsedUserCommand
-                {
-                    Command = availableCommand.Command,
-                    HasArgument = availableCommand.HasArgument,
-                    Argument = null,
-                    Flag = availableCommand.Flag,
-                    IsExclusive = availableCommand.IsExclusive
-                })
-                .First(command => command.Command == UserCommands.All);
-
-            var albumCommand = AvailableUserCommands.Commands
-                .Select(availableCommand => new ParsedUserCommand
-                {
-                    Command = availableCommand.Command,
-                    HasArgument = availableCommand.HasArgument,
-                    Argument = Fixture.Create<string>(),
-                    Flag = availableCommand.Flag,
-                    IsExclusive = availableCommand.IsExclusive
-                })
-                .First(command => command.Command == UserCommands.Album);
-
-            var expectedUserCommands = new List<ParsedUserCommand> { allCommand, albumCommand };
-
-            var commandsValid = _subjectUnderTest.ValidateUserCommands(expectedUserCommands);
-
-            commandsValid.Should().BeFalse();
-            _consoleAdapter.Received(1).WriteErrorLine($"Command {allCommand.Flag} may not be combined with other commands.");
-        }
-
-        [Fact]
-        public void GivenOnlyExitCommand_WhenValidatingCommands_ThenIsValid()
-        {
-            var exitCommand = AvailableUserCommands.Commands
-                .Select(availableCommand => new ParsedUserCommand
-                {
-                    Command = availableCommand.Command,
-                    HasArgument = availableCommand.HasArgument,
-                    Argument = null,
-                    Flag = availableCommand.Flag,
-                    IsExclusive = availableCommand.IsExclusive
-                })
-                .First(command => command.Command == UserCommands.Exit);
-
-            var expectedUserCommands = new List<ParsedUserCommand> { exitCommand };
-
-            var commandsValid = _subjectUnderTest.ValidateUserCommands(expectedUserCommands);
-
-            commandsValid.Should().BeTrue();
-            _consoleAdapter.DidNotReceive().WriteErrorLine(Arg.Any<string>());
+            _consoleAdapter.Received(1).WriteWarningLine("No results found.");
         }
     }
 }

@@ -112,29 +112,39 @@ public class DataRetrievalServiceTests : TestBase
     public class RetrieveAlbums : DataRetrievalServiceTests
     {
         [Fact]
-        public async Task GivenNoSearchText_WhenRetrievingAlbums_ThenRequestsCorrectEndpoint()
+        public async Task GivenNoAlbumId_AndNoSearchText_WhenRetrievingAlbums_ThenRequestsCorrectEndpoint()
         {
             const string expectedEndpoint = "https://jsonplaceholder.typicode.com/albums";
 
-            await _subjectUnderTest.RetrieveAlbums(null);
+            await _subjectUnderTest.RetrieveAlbums(null, null);
 
             _httpMessageHandlerMock.RecordedRequests.First().RequestUri.Should().Be(expectedEndpoint);
         }
 
         [Fact]
-        public async Task GivenNoSearchText_WhenRetrievingAlbums_AndResponseOk_ThenReturnsAllAlbums()
+        public async Task GivenAlbumId_WhenRetrievingAlbums_ThenRequestsCorrectEndpoint()
+        {
+            var expectedEndpoint = $"https://jsonplaceholder.typicode.com/albums?id={_expectedAlbumId}";
+
+            await _subjectUnderTest.RetrieveAlbums(_expectedAlbumId, null);
+
+            _httpMessageHandlerMock.RecordedRequests.First().RequestUri.Should().Be(expectedEndpoint);
+        }
+
+        [Fact]
+        public async Task GivenAlbumId_AndNoSearchText_WhenRetrievingAlbums_AndResponseOk_ThenReturnsAllAlbumsInAlbum()
         {
             var expectedAlbums = Fixture.CreateMany<Album>();
 
             _httpMessageHandlerMock.MockResponse = JsonConvert.SerializeObject(expectedAlbums);
 
-            var actualAlbums = await _subjectUnderTest.RetrieveAlbums(null);
+            var actualAlbums = await _subjectUnderTest.RetrieveAlbums(_expectedAlbumId, null);
 
             actualAlbums.Should().BeEquivalentTo(expectedAlbums);
         }
 
         [Fact]
-        public async Task GivenSearchText_WhenRetrievingAlbums_AndResponseOk_ThenReturnsAlbumsMatchingSearchText()
+        public async Task GivenAlbumId_AndSearchText_WhenRetrievingAlbums_AndResponseOk_ThenReturnsAlbumsMatchingSearchText()
         {
             var expectedAlbums = Fixture.CreateMany<Album>(3).ToList();
 
@@ -142,7 +152,7 @@ public class DataRetrievalServiceTests : TestBase
 
             _httpMessageHandlerMock.MockResponse = JsonConvert.SerializeObject(expectedAlbums);
 
-            var actualAlbums = await _subjectUnderTest.RetrieveAlbums(_expectedSearchText);
+            var actualAlbums = await _subjectUnderTest.RetrieveAlbums(_expectedAlbumId, _expectedSearchText);
 
             actualAlbums.Should().BeEquivalentTo(new List<Album>
             {
@@ -155,7 +165,7 @@ public class DataRetrievalServiceTests : TestBase
         {
             _httpMessageHandlerMock.MockResponse = string.Empty;
 
-            var actualAlbums = await _subjectUnderTest.RetrieveAlbums(null);
+            var actualAlbums = await _subjectUnderTest.RetrieveAlbums(_expectedAlbumId, null);
 
             actualAlbums.Should().BeEmpty();
         }
@@ -165,7 +175,7 @@ public class DataRetrievalServiceTests : TestBase
         {
             _httpMessageHandlerMock.MockStatusCode = HttpStatusCode.ServiceUnavailable;
 
-            Func<Task> function = async () => await _subjectUnderTest.RetrieveAlbums(null);
+            Func<Task> function = async () => await _subjectUnderTest.RetrieveAlbums(null, null);
 
             await function.Should().ThrowAsync<HttpRequestException>().WithMessage("Unable to retrieve albums from api");
         }

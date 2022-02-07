@@ -6,5 +6,5 @@ public interface IDataRetrievalService
 {
     Task<IEnumerable<Image>> RetrieveImages(int? albumId, string? searchText);
 
-    Task<IEnumerable<Album>> RetrieveAlbums(string? searchText);
+    Task<IEnumerable<Album>> RetrieveAlbums(int? albumId, string? searchText);
 }

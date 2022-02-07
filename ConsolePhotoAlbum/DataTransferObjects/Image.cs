@@ -10,5 +10,5 @@ public class Image
 
     public string? Title { get; set; }
 
-    public Uri? ImageUrl { get; set; }
+    public Uri? Url { get; set; }
 }

@@ -2,9 +2,9 @@
 
 public interface IConsoleAdapter
 {
-    void Clear();
-
     void Write(string output);
+
+    void WriteError(string output);
 
     void WriteLine(string output);
 
@@ -13,6 +13,4 @@ public interface IConsoleAdapter
     void WriteInfoLine(string output);
 
     void WriteErrorLine(string output);
-
-    string? ReadLine();
 }

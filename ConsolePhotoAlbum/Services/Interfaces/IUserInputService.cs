@@ -4,15 +4,13 @@ using DataTransferObjects;
 
 public interface IUserInputService
 {
+    ParsedCommandLineArguments? ParseCommandLineArguments(IEnumerable<string> commandLineArguments);
+
     void ShowUserInstructions();
 
-    void ShowReturnToMenuPrompt();
+    void ShowAlbumListing(List<Album> retrievedAlbums);
 
     void ShowImageListing(List<Image> retrievedImages);
 
-    void ShowNoImagesFoundMessage();
-
-    List<ParsedUserCommand> GetParsedUserCommands();
-
-    bool ValidateUserCommands(List<ParsedUserCommand> parsedUserCommands);
+    void ShowNoResultsFoundMessage();
 }

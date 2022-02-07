@@ -39,9 +39,12 @@ Example:
 
 ## Running locally
 
-You can run this application directly if your machine has the dotnet sdk available, or you can run in Docker.
+You can run this application directly with dotnet if your machine has the dotnet sdk available, or you can run with Docker.
 
 - To run with dotnet on your machine
-  - `dotnet run --project ConsolePhotoAlbum`
+  - `dotnet run --project ConsolePhotoAlbum get albums [--albumId=3] [--searchText=abc]`
+  - `dotnet run --project ConsolePhotoAlbum get images [--albumId=3] [--searchText=abc]`
 - To run with Docker
-  - `docker-compose up`
+  - `docker-compose build`
+  - `docker-compose run consolephotoalbum get albums [--albumId=3] [--searchText=abc]`
+  - `docker-compose run consolephotoalbum get images [--albumId=3] [--searchText=abc]`

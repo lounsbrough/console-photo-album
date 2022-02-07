@@ -1,85 +1,47 @@
 ﻿namespace ConsolePhotoAlbum.Services;
 
-using Adapters.Interfaces;
 using Enums;
 using Interfaces;
 
 public class ConsolePhotoAlbumService : IConsolePhotoAlbumService
 {
-    private readonly IConsoleAdapter _consoleAdapter;
     private readonly IUserInputService _userInputService;
     private readonly IDataRetrievalService _dataRetrievalService;
 
     public ConsolePhotoAlbumService(
-        IConsoleAdapter consoleAdapter,
         IUserInputService userInputService,
         IDataRetrievalService dataRetrievalService)
     {
-        _consoleAdapter = consoleAdapter;
         _userInputService = userInputService;
         _dataRetrievalService = dataRetrievalService;
     }
 
     public async Task RunProgram()
     {
-        bool loopAgain;
+        var commandLineArguments = Environment.GetCommandLineArgs();
 
-        do
+        var parsedCommandLineArguments = _userInputService.ParseCommandLineArguments(commandLineArguments);
+
+        if (parsedCommandLineArguments == null)
         {
-            loopAgain = await RunMenuLoop();
-        }
-        while (loopAgain);
-    }
-
-    public async Task<bool> RunMenuLoop()
-    {
-        try
-        {
-            _userInputService.ShowUserInstructions();
-
-            var parsedUserCommands = _userInputService.GetParsedUserCommands();
-            var commandsValid = _userInputService.ValidateUserCommands(parsedUserCommands);
-
-            if (!commandsValid)
-            {
-                _userInputService.ShowReturnToMenuPrompt();
-
-                return true;
-            }
-
-            if (parsedUserCommands.Any(command => command.Command == UserCommands.Exit))
-            {
-                return false;
-            }
-
-            var parsedAlbumCommand = parsedUserCommands.FirstOrDefault(command => command.Command == UserCommands.Album);
-            var parsedSearchCommand = parsedUserCommands.FirstOrDefault(command => command.Command == UserCommands.Search);
-
-            int? albumId = null;
-            if (int.TryParse(parsedAlbumCommand?.Argument, out var parsedAlbumId))
-            {
-                albumId = parsedAlbumId;
-            }
-
-            var retrievedImages = (await _dataRetrievalService.RetrieveImages(albumId, parsedSearchCommand?.Argument)).ToList();
-
-            if (retrievedImages.Any())
-            {
-                _userInputService.ShowImageListing(retrievedImages);
-            }
-            else
-            {
-                _userInputService.ShowNoImagesFoundMessage();
-            }
-
-            _userInputService.ShowReturnToMenuPrompt();
-        }
-        catch (Exception)
-        {
-            _consoleAdapter.WriteErrorLine("Unhandled exception occurred.");
-            _userInputService.ShowReturnToMenuPrompt();
+            return;
         }
 
-        return true;
+        parsedCommandLineArguments.Flags.TryGetValue(AvailableFlags.AlbumId, out var albumId);
+
+        parsedCommandLineArguments.Flags.TryGetValue(AvailableFlags.SearchText, out var searchText);
+
+        if (parsedCommandLineArguments.Resource == AvailableResources.Albums)
+        {
+            var retrievedAlbums = (await _dataRetrievalService.RetrieveAlbums(albumId as int?, searchText as string)).ToList();
+
+            _userInputService.ShowAlbumListing(retrievedAlbums);
+        }
+        else if (parsedCommandLineArguments.Resource == AvailableResources.Images)
+        {
+            var retrievedImages = (await _dataRetrievalService.RetrieveImages(albumId as int?, searchText as string)).ToList();
+
+            _userInputService.ShowImageListing(retrievedImages);
+        }
     }
 }
