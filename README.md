@@ -7,9 +7,16 @@
 
 - I went through some iterations of trying to figure out how to set up the program parameters simply for the user.
   - I ultimately landed on passing an `action`, a `resource`, and optional `flags`.
-  - This feels a lot like `kubectl` and other cli tools I've used, so it made sense to me.
+  - This command format feels a lot like `kubectl` and other cli tools I've used, so it made sense to me.
 - There are more endpoints and methods available in the demo api I was asked to work with.
   - I only implemented `get`ing `images` and `albums`, but I tried to write the code in a way that it could easily be augmented.
+- Testing
+  - In scope for this demo:
+    - Unit testing
+    - Manual testing
+  - Out of scope for this demo:
+    - Automated acceptance testing
+    - Load testing
 
 ---
 ## Here is the challenge that was presented:
@@ -46,13 +53,26 @@ Example:
 ---
 ## Running locally
 
-You can run this application directly with dotnet if your machine has the dotnet sdk available, or you can run with Docker.
+You can run this application directly with dotnet if your machine has the `dotnet sdk` installed, or you can run with `docker-compose` on any machine with Docker installed.
 
-- To run with dotnet on your machine
-  - `dotnet build console-photo-album.sln`
-  - `dotnet run --project ConsolePhotoAlbum get albums [--albumId=3] [--searchText=abc]`
-  - `dotnet run --project ConsolePhotoAlbum get images [--albumId=3] [--searchText=abc]`
-- To run with Docker
-  - `docker-compose build`
-  - `docker-compose run consolephotoalbum get albums [--albumId=3] [--searchText=abc]`
-  - `docker-compose run consolephotoalbum get images [--albumId=3] [--searchText=abc]`
+### dotnet sdk
+  ```sh
+  dotnet build console-photo-album.sln
+  ```
+  ```sh
+  dotnet run --project ConsolePhotoAlbum get albums --albumId=3 --searchText=laborum
+  ```
+  ```sh
+  dotnet run --project ConsolePhotoAlbum get images --albumId=3 --searchText=laborum
+  ```
+
+### docker-compose
+  ```sh
+  docker-compose build
+  ```
+  ```sh
+  docker-compose run consolephotoalbum get albums --albumId=3 --searchText=laborum
+  ```
+  ```sh
+  docker-compose run consolephotoalbum get images --albumId=3 --searchText=laborum
+  ```
