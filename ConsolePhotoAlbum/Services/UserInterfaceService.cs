@@ -115,6 +115,11 @@ public class UserInterfaceService : IUserInterfaceService
         _consoleAdapter.WriteWarningLine("No results found.");
     }
 
+    public void ShowUnhandledExceptionMessage()
+    {
+        _consoleAdapter.WriteErrorLine("An unexpected error has occured, please try again.");
+    }
+
     private static List<int> GetListingTableColumnWidths(IReadOnlyList<string> headerFields, IReadOnlyList<string[]> detailRecords)
     {
         var maxDataLengths = headerFields.Select((headerField, index) =>

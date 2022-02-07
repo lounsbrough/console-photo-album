@@ -13,4 +13,6 @@ public interface IUserInterfaceService
     void ShowImageListing(List<Image> retrievedImages);
 
     void ShowNoResultsFoundMessage();
+
+    void ShowUnhandledExceptionMessage();
 }

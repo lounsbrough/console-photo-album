@@ -18,45 +18,54 @@ public class ConsolePhotoAlbumService : IConsolePhotoAlbumService
 
     public async Task RunProgram()
     {
-        var commandLineArguments = Environment.GetCommandLineArgs();
-
-        var parsedCommandLineArguments = _userInterfaceService.ParseCommandLineArguments(commandLineArguments);
-
-        if (parsedCommandLineArguments == null)
+        try
         {
-            return;
+            var commandLineArguments = Environment.GetCommandLineArgs();
+
+            var parsedCommandLineArguments = _userInterfaceService.ParseCommandLineArguments(commandLineArguments);
+
+            if (parsedCommandLineArguments == null)
+            {
+                return;
+            }
+
+            parsedCommandLineArguments.Flags.TryGetValue(AvailableFlags.AlbumId, out var albumId);
+
+            parsedCommandLineArguments.Flags.TryGetValue(AvailableFlags.SearchText, out var searchText);
+
+            if (parsedCommandLineArguments.Resource == AvailableResources.Albums)
+            {
+                var retrievedAlbums =
+                    (await _dataRetrievalService.RetrieveAlbums(albumId as int?, searchText as string)).ToList();
+
+                if (retrievedAlbums.Any())
+                {
+                    _userInterfaceService.ShowAlbumListing(retrievedAlbums);
+                }
+                else
+                {
+                    _userInterfaceService.ShowNoResultsFoundMessage();
+                }
+            }
+            else if (parsedCommandLineArguments.Resource == AvailableResources.Images)
+            {
+                var retrievedImages =
+                    (await _dataRetrievalService.RetrieveImages(albumId as int?, searchText as string))
+                    .ToList();
+
+                if (retrievedImages.Any())
+                {
+                    _userInterfaceService.ShowImageListing(retrievedImages);
+                }
+                else
+                {
+                    _userInterfaceService.ShowNoResultsFoundMessage();
+                }
+            }
         }
-
-        parsedCommandLineArguments.Flags.TryGetValue(AvailableFlags.AlbumId, out var albumId);
-
-        parsedCommandLineArguments.Flags.TryGetValue(AvailableFlags.SearchText, out var searchText);
-
-        if (parsedCommandLineArguments.Resource == AvailableResources.Albums)
+        catch (Exception)
         {
-            var retrievedAlbums = (await _dataRetrievalService.RetrieveAlbums(albumId as int?, searchText as string)).ToList();
-
-            if (retrievedAlbums.Any())
-            {
-                _userInterfaceService.ShowAlbumListing(retrievedAlbums);
-            }
-            else
-            {
-                _userInterfaceService.ShowNoResultsFoundMessage();
-            }
-        }
-        else if (parsedCommandLineArguments.Resource == AvailableResources.Images)
-        {
-            var retrievedImages = (await _dataRetrievalService.RetrieveImages(albumId as int?, searchText as string))
-                .ToList();
-
-            if (retrievedImages.Any())
-            {
-                _userInterfaceService.ShowImageListing(retrievedImages);
-            }
-            else
-            {
-                _userInterfaceService.ShowNoResultsFoundMessage();
-            }
+            _userInterfaceService.ShowUnhandledExceptionMessage();
         }
     }
 }
