@@ -83,39 +83,39 @@ public class UserInterfaceService : IUserInterfaceService
     {
         const string headerLine = "Id - Title";
 
-        WriteNewLines(2);
-        _consoleAdapter.WriteLine(headerLine);
+        _consoleAdapter.WriteNewLines(1);
+        _consoleAdapter.WriteInfoLine(headerLine);
 
-        WriteNewLines(1);
+        _consoleAdapter.WriteNewLines(1);
         foreach (var retrievedAlbum in retrievedAlbums)
         {
             _consoleAdapter.WriteInfoLine($"{retrievedAlbum.Id} - {retrievedAlbum.Title}");
         }
 
-        WriteNewLines(1);
-        _consoleAdapter.WriteLine(headerLine);
+        _consoleAdapter.WriteNewLines(1);
+        _consoleAdapter.WriteInfoLine(headerLine);
     }
 
     public void ShowImageListing(List<Image> retrievedImages)
     {
         const string headerLine = "Album Id - Id - Title - Image Url";
 
-        WriteNewLines(2);
-        _consoleAdapter.WriteLine(headerLine);
+        _consoleAdapter.WriteNewLines(1);
+        _consoleAdapter.WriteInfoLine(headerLine);
 
-        WriteNewLines(1);
+        _consoleAdapter.WriteNewLines(1);
         foreach (var retrievedImage in retrievedImages)
         {
             _consoleAdapter.WriteInfoLine($"{retrievedImage.AlbumId} - {retrievedImage.Id} - {retrievedImage.Title} - {retrievedImage.Url}");
         }
 
-        WriteNewLines(1);
-        _consoleAdapter.WriteLine(headerLine);
+        _consoleAdapter.WriteNewLines(1);
+        _consoleAdapter.WriteInfoLine(headerLine);
     }
 
     public void ShowNoResultsFoundMessage()
     {
-        WriteNewLines(2);
+        _consoleAdapter.WriteNewLines(1);
         _consoleAdapter.WriteWarningLine("No results found.");
     }
 
@@ -155,12 +155,5 @@ public class UserInterfaceService : IUserInterfaceService
         }
 
         return true;
-    }
-
-    private void WriteNewLines(int count)
-    {
-        var newLines = Enumerable.Repeat(Environment.NewLine, count).ToList();
-
-        _consoleAdapter.Write(string.Join(string.Empty, newLines));
     }
 }

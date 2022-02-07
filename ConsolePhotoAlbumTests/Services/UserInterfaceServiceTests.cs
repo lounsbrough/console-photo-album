@@ -255,10 +255,10 @@ public class UserInterfaceServiceTests : TestBase
 
             Received.InOrder(() =>
             {
-                _consoleAdapter.WriteLine(headerLine);
+                _consoleAdapter.WriteInfoLine(headerLine);
                 _consoleAdapter.WriteInfoLine($"{expectedAlbums[0].Id} - {expectedAlbums[0].Title}");
                 _consoleAdapter.WriteInfoLine($"{expectedAlbums[1].Id} - {expectedAlbums[1].Title}");
-                _consoleAdapter.WriteLine(headerLine);
+                _consoleAdapter.WriteInfoLine(headerLine);
             });
         }
     }
@@ -276,10 +276,10 @@ public class UserInterfaceServiceTests : TestBase
 
             Received.InOrder(() =>
             {
-                _consoleAdapter.WriteLine(headerLine);
+                _consoleAdapter.WriteInfoLine(headerLine);
                 _consoleAdapter.WriteInfoLine($"{expectedImages[0].AlbumId} - {expectedImages[0].Id} - {expectedImages[0].Title} - {expectedImages[0].Url}");
                 _consoleAdapter.WriteInfoLine($"{expectedImages[1].AlbumId} - {expectedImages[1].Id} - {expectedImages[1].Title} - {expectedImages[1].Url}");
-                _consoleAdapter.WriteLine(headerLine);
+                _consoleAdapter.WriteInfoLine(headerLine);
             });
         }
     }
@@ -291,7 +291,6 @@ public class UserInterfaceServiceTests : TestBase
         {
             _subjectUnderTest.ShowNoResultsFoundMessage();
 
-            _consoleAdapter.Received(1).Write($"{Environment.NewLine}{Environment.NewLine}");
             _consoleAdapter.Received(1).WriteWarningLine("No results found.");
         }
     }

@@ -5,9 +5,11 @@ using Interfaces;
 
 public class ConsoleAdapter : IConsoleAdapter
 {
-    public void Write(string output)
+    public void WriteInfo(string output)
     {
+        Console.ForegroundColor = ConsoleColor.Cyan;
         Console.Write(output);
+        Console.ResetColor();
     }
 
     public void WriteError(string output)
@@ -17,14 +19,9 @@ public class ConsoleAdapter : IConsoleAdapter
         Console.ResetColor();
     }
 
-    public void WriteLine(string output)
-    {
-        Console.WriteLine(output);
-    }
-
     public void WriteInfoLine(string output)
     {
-        Console.ForegroundColor = ConsoleColor.Blue;
+        Console.ForegroundColor = ConsoleColor.Cyan;
         Console.WriteLine(output);
         Console.ResetColor();
     }
@@ -41,5 +38,12 @@ public class ConsoleAdapter : IConsoleAdapter
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine(output);
         Console.ResetColor();
+    }
+
+    public void WriteNewLines(int count)
+    {
+        var newLines = Enumerable.Repeat(Environment.NewLine, count).ToList();
+
+        Console.Write(string.Join(string.Empty, newLines));
     }
 }
