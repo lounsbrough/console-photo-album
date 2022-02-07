@@ -20,7 +20,8 @@ public class UserInterfaceService : IUserInterfaceService
     {
         var userProvidedArguments = commandLineArguments.Skip(1).ToList();
 
-        if (userProvidedArguments.Count < 2)
+        const int minimumUserProvidedArguments = 2;
+        if (userProvidedArguments.Count < minimumUserProvidedArguments)
         {
             ShowUserInstructions();
 
@@ -54,7 +55,7 @@ public class UserInterfaceService : IUserInterfaceService
             return null;
         }
 
-        if (userProvidedArguments.Count <= 2)
+        if (userProvidedArguments.Count == minimumUserProvidedArguments)
         {
             return parsedCommandLineArguments;
         }
