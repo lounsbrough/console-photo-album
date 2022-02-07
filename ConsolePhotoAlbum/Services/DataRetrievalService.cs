@@ -11,18 +11,20 @@ public class DataRetrievalService : IDataRetrievalService
     public DataRetrievalService(HttpClient httpClient)
     {
         _httpClient = httpClient;
+
+        _httpClient.BaseAddress = new Uri("https://jsonplaceholder.typicode.com");
     }
 
     public async Task<IEnumerable<Image>> RetrieveImages(int? albumId, string? searchText)
     {
-        var endpoint = "https://jsonplaceholder.typicode.com/photos";
+        var imagesEndpoint = "/photos";
 
         if (albumId != null)
         {
-            endpoint += $"?albumId={albumId}";
+            imagesEndpoint += $"?albumId={albumId}";
         }
 
-        var response = await _httpClient.GetAsync(endpoint);
+        var response = await _httpClient.GetAsync(imagesEndpoint);
 
         var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -49,9 +51,9 @@ public class DataRetrievalService : IDataRetrievalService
 
     public async Task<IEnumerable<Album>> RetrieveAlbums(string? searchText)
     {
-        const string endpoint = "https://jsonplaceholder.typicode.com/albums";
+        const string albumsEndpoint = "/albums";
 
-        var response = await _httpClient.GetAsync(endpoint);
+        var response = await _httpClient.GetAsync(albumsEndpoint);
 
         var responseContent = await response.Content.ReadAsStringAsync();
 
