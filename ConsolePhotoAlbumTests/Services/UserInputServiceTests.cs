@@ -44,6 +44,9 @@ public class UserInputServiceTests : TestBase
             var searchCommand = AvailableUserCommands.Commands
                 .First(command => command.Command == UserCommands.Search);
 
+            var allCommand = AvailableUserCommands.Commands
+                .First(command => command.Command == UserCommands.All);
+
             var exitCommand = AvailableUserCommands.Commands
                 .First(command => command.Command == UserCommands.Exit);
 
@@ -57,6 +60,7 @@ public class UserInputServiceTests : TestBase
             instructions.Should().MatchRegex($@"Example: {albumCommand.Flag} \d*");
             instructions.Should().Contain($"{searchCommand.Flag} {{text}} - Find images with names matching the search text.");
             instructions.Should().MatchRegex($@"Example: {searchCommand.Flag} [a-zA-Z]*");
+            instructions.Should().Contain($"{allCommand.Flag} - Find all images.");
             instructions.Should().Contain($"{exitCommand.Flag} - Exit this program.");
             instructions.Should().Contain("Enter command:");
         }

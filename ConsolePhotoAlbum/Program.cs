@@ -11,7 +11,7 @@ var serviceProvider = new ServiceCollection()
     .AddSingleton<IConsolePhotoAlbumService, ConsolePhotoAlbumService>()
     .AddSingleton<IConsoleAdapter, ConsoleAdapter>()
     .AddScoped<IUserInputService, UserInputService>()
-    .AddScoped<IImageRetrievalService, ImageRetrievalService>()
+    .AddScoped<IDataRetrievalService, DataRetrievalService>()
     .AddSingleton<HttpClient>()
     .BuildServiceProvider();
 

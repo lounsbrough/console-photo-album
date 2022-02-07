@@ -29,6 +29,9 @@ public class UserInputService : IUserInputService
         var searchCommand = AvailableUserCommands.Commands
             .First(command => command.Command == UserCommands.Search);
 
+        var allCommand = AvailableUserCommands.Commands
+            .First(command => command.Command == UserCommands.All);
+
         var exitCommand = AvailableUserCommands.Commands
             .First(command => command.Command == UserCommands.Exit);
 
@@ -38,6 +41,7 @@ public class UserInputService : IUserInputService
             $"  Example: {albumCommand.Flag} 3{newLine}{newLine}" +
             $"{searchCommand.Flag} {{text}} - Find images with names matching the search text.{newLine}" +
             $"  Example: {searchCommand.Flag} velit{newLine}{newLine}" +
+            $"{allCommand.Flag} - Find all images.{newLine}{newLine}" +
             $"{exitCommand.Flag} - Exit this program.{newLine}{newLine}" +
             "Enter command: ";
 

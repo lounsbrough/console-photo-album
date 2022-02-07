@@ -2,15 +2,9 @@
 
 using System;
 
-public class Image
+public class Album
 {
-    public int AlbumId { get; set; }
-
     public int Id { get; set; }
 
     public string? Title { get; set; }
-
-    public Uri? ImageUrl { get; set; }
-
-    public Uri? ThumbnailUrl { get; set; }
 }

@@ -8,16 +8,16 @@ public class ConsolePhotoAlbumService : IConsolePhotoAlbumService
 {
     private readonly IConsoleAdapter _consoleAdapter;
     private readonly IUserInputService _userInputService;
-    private readonly IImageRetrievalService _imageRetrievalService;
+    private readonly IDataRetrievalService _dataRetrievalService;
 
     public ConsolePhotoAlbumService(
         IConsoleAdapter consoleAdapter,
         IUserInputService userInputService,
-        IImageRetrievalService imageRetrievalService)
+        IDataRetrievalService dataRetrievalService)
     {
         _consoleAdapter = consoleAdapter;
         _userInputService = userInputService;
-        _imageRetrievalService = imageRetrievalService;
+        _dataRetrievalService = dataRetrievalService;
     }
 
     public async Task RunProgram()
@@ -61,7 +61,7 @@ public class ConsolePhotoAlbumService : IConsolePhotoAlbumService
                 albumId = parsedAlbumId;
             }
 
-            var retrievedImages = (await _imageRetrievalService.RetrieveImages(albumId, parsedSearchCommand?.Argument)).ToList();
+            var retrievedImages = (await _dataRetrievalService.RetrieveImages(albumId, parsedSearchCommand?.Argument)).ToList();
 
             if (retrievedImages.Any())
             {

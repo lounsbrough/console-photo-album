@@ -4,11 +4,11 @@ using DataTransferObjects;
 using Interfaces;
 using Newtonsoft.Json;
 
-public class ImageRetrievalService : IImageRetrievalService
+public class DataRetrievalService : IDataRetrievalService
 {
     private readonly HttpClient _httpClient;
 
-    public ImageRetrievalService(HttpClient httpClient)
+    public DataRetrievalService(HttpClient httpClient)
     {
         _httpClient = httpClient;
     }
@@ -45,5 +45,34 @@ public class ImageRetrievalService : IImageRetrievalService
         }
 
         return retrievedImages;
+    }
+
+    public async Task<IEnumerable<Album>> RetrieveAlbums(string? searchText)
+    {
+        const string endpoint = "https://jsonplaceholder.typicode.com/albums";
+
+        var response = await _httpClient.GetAsync(endpoint);
+
+        var responseContent = await response.Content.ReadAsStringAsync();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException("Unable to retrieve albums from api");
+        }
+
+        var retrievedAlbums = JsonConvert.DeserializeObject<IEnumerable<Album>>(responseContent);
+
+        if (retrievedAlbums == null)
+        {
+            return new List<Album>();
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchText))
+        {
+            retrievedAlbums = retrievedAlbums
+                .Where(album => album.Title != null && album.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+        }
+
+        return retrievedAlbums;
     }
 }

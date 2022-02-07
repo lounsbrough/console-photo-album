@@ -17,19 +17,19 @@ public class ConsolePhotoAlbumServiceTests : TestBase
 {
     private readonly IConsoleAdapter _consoleAdapter;
     private readonly IUserInputService _userInputService;
-    private readonly IImageRetrievalService _imageRetrievalService;
+    private readonly IDataRetrievalService _dataRetrievalService;
     private readonly ConsolePhotoAlbumService _subjectUnderTest;
 
     protected ConsolePhotoAlbumServiceTests()
     {
         _consoleAdapter = Substitute.For<IConsoleAdapter>();
         _userInputService = Substitute.For<IUserInputService>();
-        _imageRetrievalService = Substitute.For<IImageRetrievalService>();
+        _dataRetrievalService = Substitute.For<IDataRetrievalService>();
 
         _subjectUnderTest = new ConsolePhotoAlbumService(
             _consoleAdapter,
             _userInputService,
-            _imageRetrievalService);
+            _dataRetrievalService);
     }
 
     public class RunMenuLoop : ConsolePhotoAlbumServiceTests
@@ -50,7 +50,7 @@ public class ConsolePhotoAlbumServiceTests : TestBase
             var continueLoop = await _subjectUnderTest.RunMenuLoop();
 
             continueLoop.Should().BeTrue();
-            await _imageRetrievalService.DidNotReceive().RetrieveImages(Arg.Any<int?>(), Arg.Any<string?>());
+            await _dataRetrievalService.DidNotReceive().RetrieveImages(Arg.Any<int?>(), Arg.Any<string?>());
             _userInputService.Received(1).ShowReturnToMenuPrompt();
         }
 
@@ -68,7 +68,7 @@ public class ConsolePhotoAlbumServiceTests : TestBase
             var continueLoop = await _subjectUnderTest.RunMenuLoop();
 
             continueLoop.Should().BeFalse();
-            await _imageRetrievalService.DidNotReceive().RetrieveImages(Arg.Any<int?>(), Arg.Any<string?>());
+            await _dataRetrievalService.DidNotReceive().RetrieveImages(Arg.Any<int?>(), Arg.Any<string?>());
             _userInputService.DidNotReceive().ShowReturnToMenuPrompt();
         }
 
@@ -98,7 +98,7 @@ public class ConsolePhotoAlbumServiceTests : TestBase
             var continueLoop = await _subjectUnderTest.RunMenuLoop();
 
             continueLoop.Should().BeTrue();
-            await _imageRetrievalService.Received(1).RetrieveImages(expectedAlbumId, expectedSearchText);
+            await _dataRetrievalService.Received(1).RetrieveImages(expectedAlbumId, expectedSearchText);
             _userInputService.Received(1).ShowReturnToMenuPrompt();
         }
 
@@ -109,7 +109,7 @@ public class ConsolePhotoAlbumServiceTests : TestBase
 
             _userInputService.GetParsedUserCommands().Returns(new List<ParsedUserCommand>());
             _userInputService.ValidateUserCommands(Arg.Any<List<ParsedUserCommand>>()).Returns(true);
-            _imageRetrievalService.RetrieveImages(Arg.Any<int?>(), Arg.Any<string?>())
+            _dataRetrievalService.RetrieveImages(Arg.Any<int?>(), Arg.Any<string?>())
                 .Returns(expectedImages);
 
             var continueLoop = await _subjectUnderTest.RunMenuLoop();
@@ -124,7 +124,7 @@ public class ConsolePhotoAlbumServiceTests : TestBase
         {
             _userInputService.GetParsedUserCommands().Returns(new List<ParsedUserCommand>());
             _userInputService.ValidateUserCommands(Arg.Any<List<ParsedUserCommand>>()).Returns(true);
-            _imageRetrievalService.RetrieveImages(Arg.Any<int?>(), Arg.Any<string?>())
+            _dataRetrievalService.RetrieveImages(Arg.Any<int?>(), Arg.Any<string?>())
                 .Returns(new List<Image>());
 
             var continueLoop = await _subjectUnderTest.RunMenuLoop();
