@@ -49,6 +49,7 @@ Example:
 You can run this application directly with dotnet if your machine has the dotnet sdk available, or you can run with Docker.
 
 - To run with dotnet on your machine
+  - `dotnet build console-photo-album.sln`
   - `dotnet run --project ConsolePhotoAlbum get albums [--albumId=3] [--searchText=abc]`
   - `dotnet run --project ConsolePhotoAlbum get images [--albumId=3] [--searchText=abc]`
 - To run with Docker
